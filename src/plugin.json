@@ -1,0 +1,46 @@
+{
+  "$schema": "https://raw.githubusercontent.com/grafana/grafana/main/docs/sources/developers/plugins/plugin.schema.json",
+  "type": "datasource",
+  "name": "Garmin Connect",
+  "id": "barnesc-garminconnect-datasource",
+  "metrics": true,
+  "backend": true,
+  "alerting": true,
+  "executable": "gpx_garminconnect",
+  "info": {
+    "description": "Visualize Garmin Connect activities and GPS tracks in Grafana, e.g. on the Geomap panel",
+    "author": {
+      "name": "Christopher Barnes"
+    },
+    "keywords": ["datasource", "garmin", "gps", "sports", "geomap"],
+    "logos": {
+      "small": "img/logo.svg",
+      "large": "img/logo.svg"
+    },
+    "links": [],
+    "screenshots": [],
+    "updated": "%TODAY%",
+    "version": "%VERSION%"
+  },
+  "includes": [
+    {
+      "type": "dashboard",
+      "name": "Garmin Athlete Overview",
+      "path": "dashboards/garmin_athlete_overview.json"
+    },
+    {
+      "type": "dashboard",
+      "name": "Garmin Activity",
+      "path": "dashboards/garmin_activity.json"
+    },
+    {
+      "type": "dashboard",
+      "name": "Garmin Health",
+      "path": "dashboards/garmin_health.json"
+    }
+  ],
+  "dependencies": {
+    "grafanaDependency": ">=12.3.0",
+    "plugins": []
+  }
+}

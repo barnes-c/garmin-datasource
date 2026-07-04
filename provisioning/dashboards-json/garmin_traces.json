@@ -1,0 +1,56 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "graphTooltip": 0,
+  "links": [],
+  "panels": [
+    {
+      "type": "table",
+      "title": "Garmin API requests — span durations",
+      "description": "Every call the plugin makes to the Garmin Connect API, with duration. garmin.day spans are the per-day fan-out of metrics like hydration or sleep.",
+      "gridPos": { "h": 12, "w": 24, "x": 0, "y": 0 },
+      "datasource": { "type": "tempo", "uid": "tempo" },
+      "targets": [
+        {
+          "refId": "A",
+          "queryType": "traceql",
+          "query": "{name=~\"garmin.*\"}",
+          "tableType": "spans",
+          "limit": 100,
+          "spss": 20
+        }
+      ],
+      "fieldConfig": { "defaults": {}, "overrides": [] },
+      "options": { "showHeader": true }
+    },
+    {
+      "type": "table",
+      "title": "Datasource query traces",
+      "description": "Whole query requests handled by the plugin backend. Click a trace ID to see the full breakdown including Grafana overhead.",
+      "gridPos": { "h": 12, "w": 24, "x": 0, "y": 12 },
+      "datasource": { "type": "tempo", "uid": "tempo" },
+      "targets": [
+        {
+          "refId": "A",
+          "queryType": "traceql",
+          "query": "{resource.service.name=\"barnesc-garminconnect-datasource\"}",
+          "tableType": "traces",
+          "limit": 50
+        }
+      ],
+      "fieldConfig": { "defaults": {}, "overrides": [] },
+      "options": { "showHeader": true }
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "tags": ["garmin", "dev"],
+  "templating": { "list": [] },
+  "time": { "from": "now-1h", "to": "now" },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Garmin Datasource Traces",
+  "uid": "garmin-traces",
+  "version": 1,
+  "weekStart": ""
+}

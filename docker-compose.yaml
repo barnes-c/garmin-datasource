@@ -1,0 +1,23 @@
+services:
+  grafana:
+    extends:
+      file: .config/docker-compose-base.yaml
+      service: grafana
+    environment:
+      GARMIN_EMAIL: ${GARMIN_EMAIL:-}
+      GARMIN_PASSWORD: ${GARMIN_PASSWORD:-}
+      GARMIN_MFA_CODE: ${GARMIN_MFA_CODE:-}
+      GF_TRACING_OPENTELEMETRY_OTLP_ADDRESS: tempo:4317
+      GF_TRACING_OPENTELEMETRY_OTLP_PROPAGATION: w3c
+    volumes:
+      - ./.tokens:/tokens
+    depends_on:
+      - tempo
+
+  tempo:
+    image: grafana/tempo:latest
+    command: ['-config.file=/etc/tempo.yaml']
+    volumes:
+      - ./tempo.yaml:/etc/tempo.yaml
+    ports:
+      - 3200:3200

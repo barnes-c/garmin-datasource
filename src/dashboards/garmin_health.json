@@ -1,0 +1,216 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "graphTooltip": 1,
+  "links": [],
+  "panels": [
+    {
+      "type": "stat",
+      "title": "Resting HR",
+      "gridPos": { "h": 4, "w": 4, "x": 0, "y": 0 },
+      "datasource": { "type": "barnesc-garminconnect-datasource", "uid": "${datasource}" },
+      "targets": [{ "refId": "A", "queryType": "metric", "metric": "resting_heart_rate" }],
+      "options": {
+        "reduceOptions": { "values": false, "calcs": ["lastNotNull"], "fields": "/^resting_heart_rate$/" },
+        "colorMode": "value",
+        "graphMode": "area"
+      }
+    },
+    {
+      "type": "stat",
+      "title": "HRV",
+      "gridPos": { "h": 4, "w": 4, "x": 4, "y": 0 },
+      "datasource": { "type": "barnesc-garminconnect-datasource", "uid": "${datasource}" },
+      "targets": [{ "refId": "A", "queryType": "metric", "metric": "hrv" }],
+      "options": {
+        "reduceOptions": { "values": false, "calcs": ["lastNotNull"], "fields": "/^hrv$/" },
+        "colorMode": "value",
+        "graphMode": "area"
+      }
+    },
+    {
+      "type": "stat",
+      "title": "SpO2",
+      "gridPos": { "h": 4, "w": 4, "x": 8, "y": 0 },
+      "datasource": { "type": "barnesc-garminconnect-datasource", "uid": "${datasource}" },
+      "targets": [{ "refId": "A", "queryType": "metric", "metric": "spo2" }],
+      "options": {
+        "reduceOptions": { "values": false, "calcs": ["lastNotNull"], "fields": "/^spo2$/" },
+        "colorMode": "value",
+        "graphMode": "area"
+      }
+    },
+    {
+      "type": "stat",
+      "title": "VO2max",
+      "gridPos": { "h": 4, "w": 4, "x": 12, "y": 0 },
+      "datasource": { "type": "barnesc-garminconnect-datasource", "uid": "${datasource}" },
+      "targets": [{ "refId": "A", "queryType": "metric", "metric": "vo2max" }],
+      "options": {
+        "reduceOptions": { "values": false, "calcs": ["lastNotNull"], "fields": "/^vo2max$/" },
+        "colorMode": "value",
+        "graphMode": "area"
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Fitness age",
+      "gridPos": { "h": 4, "w": 4, "x": 16, "y": 0 },
+      "datasource": { "type": "barnesc-garminconnect-datasource", "uid": "${datasource}" },
+      "targets": [{ "refId": "A", "queryType": "metric", "metric": "fitness_age" }],
+      "options": {
+        "reduceOptions": { "values": false, "calcs": ["lastNotNull"], "fields": "/^fitness_age$/" },
+        "colorMode": "value",
+        "graphMode": "none"
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Weight",
+      "gridPos": { "h": 4, "w": 4, "x": 20, "y": 0 },
+      "datasource": { "type": "barnesc-garminconnect-datasource", "uid": "${datasource}" },
+      "targets": [{ "refId": "A", "queryType": "metric", "metric": "weight" }],
+      "options": {
+        "reduceOptions": { "values": false, "calcs": ["lastNotNull"], "fields": "/^weight$/" },
+        "colorMode": "value",
+        "graphMode": "none"
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Body Battery",
+      "gridPos": { "h": 9, "w": 12, "x": 0, "y": 4 },
+      "datasource": { "type": "barnesc-garminconnect-datasource", "uid": "${datasource}" },
+      "targets": [{ "refId": "A", "queryType": "metric", "metric": "body_battery" }],
+      "fieldConfig": {
+        "defaults": { "custom": { "fillOpacity": 20 }, "min": 0, "max": 100 },
+        "overrides": []
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Sleep",
+      "gridPos": { "h": 9, "w": 12, "x": 12, "y": 4 },
+      "datasource": { "type": "barnesc-garminconnect-datasource", "uid": "${datasource}" },
+      "targets": [{ "refId": "A", "queryType": "metric", "metric": "sleep" }],
+      "transformations": [
+        { "id": "filterFieldsByName", "options": { "include": { "pattern": "^(time|deep|light|rem|awake)$" } } }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": { "drawStyle": "bars", "fillOpacity": 80, "stacking": { "mode": "normal", "group": "A" } }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Stress",
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 13 },
+      "datasource": { "type": "barnesc-garminconnect-datasource", "uid": "${datasource}" },
+      "targets": [{ "refId": "A", "queryType": "metric", "metric": "stress" }],
+      "fieldConfig": { "defaults": { "custom": { "spanNulls": true, "fillOpacity": 20 } }, "overrides": [] }
+    },
+    {
+      "type": "timeseries",
+      "title": "HRV",
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 13 },
+      "datasource": { "type": "barnesc-garminconnect-datasource", "uid": "${datasource}" },
+      "targets": [{ "refId": "A", "queryType": "metric", "metric": "hrv" }],
+      "fieldConfig": { "defaults": { "custom": { "spanNulls": true } }, "overrides": [] }
+    },
+    {
+      "type": "timeseries",
+      "title": "Resting HR",
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 13 },
+      "datasource": { "type": "barnesc-garminconnect-datasource", "uid": "${datasource}" },
+      "targets": [{ "refId": "A", "queryType": "metric", "metric": "resting_heart_rate" }],
+      "fieldConfig": { "defaults": { "custom": { "spanNulls": true } }, "overrides": [] }
+    },
+    {
+      "type": "timeseries",
+      "title": "SpO2 / Respiration",
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 21 },
+      "datasource": { "type": "barnesc-garminconnect-datasource", "uid": "${datasource}" },
+      "targets": [
+        { "refId": "A", "queryType": "metric", "metric": "spo2" },
+        { "refId": "B", "queryType": "metric", "metric": "respiration" }
+      ],
+      "fieldConfig": { "defaults": { "custom": { "spanNulls": true } }, "overrides": [] }
+    },
+    {
+      "type": "timeseries",
+      "title": "Hydration",
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 21 },
+      "datasource": { "type": "barnesc-garminconnect-datasource", "uid": "${datasource}" },
+      "targets": [{ "refId": "A", "queryType": "metric", "metric": "hydration" }],
+      "fieldConfig": {
+        "defaults": { "custom": { "drawStyle": "bars", "fillOpacity": 60 } },
+        "overrides": []
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Floors / Intensity minutes",
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 21 },
+      "datasource": { "type": "barnesc-garminconnect-datasource", "uid": "${datasource}" },
+      "targets": [
+        { "refId": "A", "queryType": "metric", "metric": "floors" },
+        { "refId": "B", "queryType": "metric", "metric": "intensity_minutes" }
+      ],
+      "fieldConfig": {
+        "defaults": { "custom": { "drawStyle": "bars", "fillOpacity": 60 } },
+        "overrides": []
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Weight / Body composition",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 29 },
+      "datasource": { "type": "barnesc-garminconnect-datasource", "uid": "${datasource}" },
+      "targets": [{ "refId": "A", "queryType": "metric", "metric": "body_composition" }],
+      "transformations": [
+        { "id": "filterFieldsByName", "options": { "include": { "pattern": "^(time|weight|muscle_mass|body_fat)$" } } }
+      ],
+      "fieldConfig": { "defaults": { "custom": { "spanNulls": true } }, "overrides": [] }
+    },
+    {
+      "type": "timeseries",
+      "title": "VO2max / Training readiness",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 29 },
+      "datasource": { "type": "barnesc-garminconnect-datasource", "uid": "${datasource}" },
+      "targets": [
+        { "refId": "A", "queryType": "metric", "metric": "vo2max" },
+        { "refId": "B", "queryType": "metric", "metric": "training_readiness" }
+      ],
+      "fieldConfig": { "defaults": { "custom": { "spanNulls": true } }, "overrides": [] }
+    }
+  ],
+  "refresh": "",
+  "schemaVersion": 39,
+  "tags": ["garmin"],
+  "templating": {
+    "list": [
+      {
+        "name": "datasource",
+        "label": "Datasource",
+        "type": "datasource",
+        "query": "barnesc-garminconnect-datasource",
+        "current": {},
+        "options": [],
+        "hide": 0,
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false
+      }
+    ]
+  },
+  "time": { "from": "now-30d", "to": "now" },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Garmin Health",
+  "uid": "garmin-health",
+  "version": 1,
+  "weekStart": ""
+}
