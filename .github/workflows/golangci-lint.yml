@@ -1,0 +1,32 @@
+---
+name: golangci-lint
+on:
+  pull_request:
+    paths:
+      - "go.sum"
+      - "go.mod"
+      - "**.go"
+      - ".github/workflows/golangci-lint.yml"
+      - ".github/.golangci.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  golangci:
+    permissions:
+      contents: read
+      pull-requests: read
+    name: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+        with:
+          go-version-file: go.mod
+      - uses: golangci/golangci-lint-action@82606bf257cbaff209d206a39f5134f0cfbfd2ee # v9.2.1
+        with:
+          args: --verbose --config .github/.golangci.yml
+          version: v2.12.2

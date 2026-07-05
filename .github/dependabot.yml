@@ -1,64 +1,63 @@
 version: 2
 updates:
   - package-ecosystem: npm
-    directory: '/'
+    directory: "/"
     schedule:
-      interval: 'weekly'
+      interval: "weekly"
     # Wait 5 days before updating to help circumvent supply chain attacks
     cooldown:
       default-days: 5
       # Exclude plugin-e2e to prevent false positives with canary e2e tests
       exclude:
-        - '@grafana/plugin-e2e'
-    open-pull-requests-limit: 5
+        - "@grafana/plugin-e2e"
     commit-message:
-      prefix: 'chore'
-      include: 'scope'
+      prefix: "chore"
+      include: "scope"
     groups:
       unit-test:
         patterns:
-          - '@testing-library/*'
-          - 'jest*'
-          - '@types/jest'
+          - "@testing-library/*"
+          - "jest*"
+          - "@types/jest"
       eslint:
         patterns:
-          - '@grafana/eslint-config'
-          - 'eslint*'
-          - '@typescript-eslint/*'
-          - '@stylistic/*'
+          - "@grafana/eslint-config"
+          - "eslint*"
+          - "@typescript-eslint/*"
+          - "@stylistic/*"
       grafana:
         patterns:
-          - '@grafana/*'
-        dependency-type: 'production'
+          - "@grafana/*"
+        dependency-type: "production"
         update-types:
-          - 'minor'
-          - 'patch'
+          - "minor"
+          - "patch"
       react:
         patterns:
-          - 'react'
-          - 'react-dom'
-          - '@types/react'
-          - '@types/react-dom'
+          - "react"
+          - "react-dom"
+          - "@types/react"
+          - "@types/react-dom"
         update-types:
-          - 'minor'
-          - 'patch'
+          - "minor"
+          - "patch"
 
-  - package-ecosystem: 'github-actions'
-    directory: '/'
+  - package-ecosystem: "github-actions"
+    directory: "/"
     schedule:
-      interval: 'weekly'
+      interval: "weekly"
     commit-message:
-      prefix: 'chore(ci)'
+      prefix: "chore(ci)"
     open-pull-requests-limit: 5
 
-  - package-ecosystem: 'gomod'
-    directory: '/'
+  - package-ecosystem: "gomod"
+    directory: "/"
     schedule:
-      interval: 'weekly'
+      interval: "weekly"
     open-pull-requests-limit: 5
     allow:
-      - dependency-name: 'github.com/grafana/grafana-plugin-sdk-go'
-        dependency-type: 'all'
+      - dependency-name: "github.com/grafana/grafana-plugin-sdk-go"
+        dependency-type: "all"
     commit-message:
-      prefix: 'chore'
-      include: 'scope'
+      prefix: "chore"
+      include: "scope"

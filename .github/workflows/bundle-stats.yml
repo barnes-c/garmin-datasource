@@ -5,9 +5,21 @@ on:
   pull_request:
     branches:
       - main
+    paths:
+      - 'src/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.config/**'
+      - '.github/workflows/bundle-stats.yml'
   push:
     branches:
       - main
+    paths:
+      - 'src/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.config/**'
+      - '.github/workflows/bundle-stats.yml'
 
 permissions:
   contents: read

@@ -3,7 +3,7 @@ name: Create Plugin Update
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 0 1 * *' # run once a month on the 1st day
+    - cron: "0 0 1 * *" # run once a month on the 1st day
 
 # To use this workflow please create a fine-grained personal access token for your repository with:
 # `contents: read and write`
