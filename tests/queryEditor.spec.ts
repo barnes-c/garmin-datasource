@@ -1,28 +1,41 @@
-import { test, expect } from '@grafana/plugin-e2e';
+import { test, expect, PanelEditPage } from '@grafana/plugin-e2e';
+import { Page, Locator } from '@playwright/test';
 
-test('smoke: should render query editor', async ({ panelEditPage, readProvisionedDataSource }) => {
+async function selectQueryType(page: Page, row: Locator, label: string) {
+  const combo = row.getByRole('combobox').first();
+  await combo.click();
+  await combo.fill(label);
+  // Click the option rather than pressing Enter: Enter races the async
+  // option list and can leave the previous selection in place. Option
+  // accessible names start with the label, followed by the description.
+  await page
+    .getByRole('option', { name: new RegExp(`^${label}`) })
+    .first()
+    .click();
+}
+
+async function editorRow(panelEditPage: PanelEditPage) {
+  return panelEditPage.getQueryEditorRow('A');
+}
+
+test('should render the query type picker', async ({ panelEditPage, readProvisionedDataSource }) => {
   const ds = await readProvisionedDataSource({ fileName: 'datasources.yml' });
   await panelEditPage.datasource.set(ds.name);
-  await expect(panelEditPage.getQueryEditorRow('A').getByRole('textbox', { name: 'Query Text' })).toBeVisible();
+  await expect((await editorRow(panelEditPage)).getByRole('combobox').first()).toBeVisible();
 });
 
-test('should trigger new query when Constant field is changed', async ({
-  panelEditPage,
-  readProvisionedDataSource,
-}) => {
+test('track query type should show the activity id field', async ({ panelEditPage, readProvisionedDataSource, page }) => {
   const ds = await readProvisionedDataSource({ fileName: 'datasources.yml' });
   await panelEditPage.datasource.set(ds.name);
-  await panelEditPage.getQueryEditorRow('A').getByRole('textbox', { name: 'Query Text' }).fill('test query');
-  const queryReq = panelEditPage.waitForQueryDataRequest();
-  await panelEditPage.getQueryEditorRow('A').getByRole('spinbutton').fill('10');
-  await expect(await queryReq).toBeTruthy();
+  const row = await editorRow(panelEditPage);
+  await selectQueryType(page, row, 'Track');
+  await expect(row.getByPlaceholder('12345678901 or $activity')).toBeVisible();
 });
 
-test('data query should return values 10 and 20', async ({ panelEditPage, readProvisionedDataSource }) => {
+test('metric query type should show the metric picker', async ({ panelEditPage, readProvisionedDataSource, page }) => {
   const ds = await readProvisionedDataSource({ fileName: 'datasources.yml' });
   await panelEditPage.datasource.set(ds.name);
-  await panelEditPage.getQueryEditorRow('A').getByRole('textbox', { name: 'Query Text' }).fill('test query');
-  await panelEditPage.setVisualization('Table');
-  await expect(panelEditPage.refreshPanel()).toBeOK();
-  await expect(panelEditPage.panel.data).toContainText(['10', '20']);
+  const row = await editorRow(panelEditPage);
+  await selectQueryType(page, row, 'Metric');
+  await expect(row.getByRole('combobox').nth(1)).toBeVisible();
 });

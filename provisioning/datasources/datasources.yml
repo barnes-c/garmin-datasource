@@ -13,7 +13,6 @@ datasources:
       tokenFile: '/tokens/garmin_token.json'
     secureJsonData:
       password: '${GARMIN_PASSWORD}'
-      mfaCode: '${GARMIN_MFA_CODE}'
 
   - name: tempo
     uid: tempo
@@ -22,3 +21,19 @@ datasources:
     orgId: 1
     url: http://tempo:3200
     editable: true
+
+  - name: loki
+    uid: loki
+    type: loki
+    access: proxy
+    orgId: 1
+    url: http://loki:3100
+    editable: true
+    jsonData:
+      derivedFields:
+        # $$ escapes Grafana's provisioning env-var interpolation
+        - name: traceId
+          matcherRegex: 'traceId=(\w+)'
+          datasourceUid: tempo
+          url: '$${__value.raw}'
+          urlDisplayLabel: 'View trace'

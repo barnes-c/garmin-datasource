@@ -14,11 +14,21 @@
     },
     "keywords": ["datasource", "garmin", "gps", "sports", "geomap"],
     "logos": {
-      "small": "img/logo.svg",
-      "large": "img/logo.svg"
+      "small": "img/logo.png",
+      "large": "img/logo.png"
     },
-    "links": [],
-    "screenshots": [],
+    "links": [
+      { "name": "GitHub", "url": "https://github.com/barnes-c/garmin-datasource" },
+      { "name": "License", "url": "https://github.com/barnes-c/garmin-datasource/blob/main/LICENSE" },
+      { "name": "Sponsor", "url": "https://github.com/sponsors/barnes-c" }
+    ],
+    "screenshots": [
+      { "name": "Activity dashboard", "path": "img/screenshots/activity.png" },
+      { "name": "Athlete overview", "path": "img/screenshots/athlete-overview.png" },
+      { "name": "Health dashboard", "path": "img/screenshots/health.png" },
+      { "name": "Fitness dashboard", "path": "img/screenshots/fitness.png" },
+      { "name": "Athlete comparison", "path": "img/screenshots/comparison.png" }
+    ],
     "updated": "%TODAY%",
     "version": "%VERSION%"
   },
@@ -37,6 +47,16 @@
       "type": "dashboard",
       "name": "Garmin Health",
       "path": "dashboards/garmin_health.json"
+    },
+    {
+      "type": "dashboard",
+      "name": "Garmin Athlete Comparison",
+      "path": "dashboards/garmin_athlete_comparison.json"
+    },
+    {
+      "type": "dashboard",
+      "name": "Garmin Fitness",
+      "path": "dashboards/garmin_fitness.json"
     }
   ],
   "dependencies": {

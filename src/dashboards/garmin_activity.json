@@ -172,7 +172,7 @@
       "gridPos": {
         "h": 14,
         "w": 12,
-        "x": 0,
+        "x": 12,
         "y": 4
       },
       "datasource": {
@@ -189,7 +189,10 @@
       "options": {
         "view": {
           "id": "fit",
-          "allLayers": true
+          "allLayers": true,
+          "zoom": 15,
+          "lat": 0,
+          "lon": 0
         },
         "basemap": {
           "type": "osm-standard",
@@ -229,12 +232,12 @@
       }
     },
     {
-      "type": "timeseries",
-      "title": "Heart rate / Speed",
+      "type": "trend",
+      "title": "Heart rate / Speed vs distance",
       "gridPos": {
         "h": 7,
         "w": 12,
-        "x": 12,
+        "x": 0,
         "y": 4
       },
       "datasource": {
@@ -253,14 +256,29 @@
           "id": "filterFieldsByName",
           "options": {
             "include": {
-              "pattern": "^(time|heartrate|speed)$"
+              "pattern": "^(distance|heartrate|speed)$"
             }
           }
         }
       ],
+      "options": {
+        "xField": "distance",
+        "legend": {
+          "showLegend": true,
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
       "fieldConfig": {
         "defaults": {
           "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 0,
             "spanNulls": true
           }
         },
@@ -281,12 +299,12 @@
       }
     },
     {
-      "type": "timeseries",
-      "title": "Elevation",
+      "type": "trend",
+      "title": "Elevation vs distance",
       "gridPos": {
         "h": 7,
         "w": 12,
-        "x": 12,
+        "x": 0,
         "y": 11
       },
       "datasource": {
@@ -305,14 +323,28 @@
           "id": "filterFieldsByName",
           "options": {
             "include": {
-              "pattern": "^(time|elevation)$"
+              "pattern": "^(distance|elevation)$"
             }
           }
         }
       ],
+      "options": {
+        "xField": "distance",
+        "legend": {
+          "showLegend": true,
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
       "fieldConfig": {
         "defaults": {
           "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
             "fillOpacity": 30,
             "spanNulls": true
           }
@@ -322,7 +354,7 @@
     },
     {
       "type": "barchart",
-      "title": "Splits — avg speed",
+      "title": "Splits \u2014 avg speed",
       "gridPos": {
         "h": 9,
         "w": 8,
@@ -357,10 +389,12 @@
         "defaults": {
           "custom": {
             "fillOpacity": 80
-          }
+          },
+          "noValue": "No laps in this activity"
         },
         "overrides": []
-      }
+      },
+      "description": "Garmin only records splits when the device creates laps (auto-lap or manual lap button)."
     },
     {
       "type": "barchart",
@@ -393,7 +427,11 @@
         }
       ],
       "options": {
-        "xField": "zone"
+        "xField": "zone",
+        "colorByField": "zone",
+        "legend": {
+          "showLegend": false
+        }
       },
       "fieldConfig": {
         "defaults": {
@@ -401,7 +439,50 @@
             "fillOpacity": 80
           }
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "zone"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "thresholds"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "text",
+                      "value": null
+                    },
+                    {
+                      "color": "blue",
+                      "value": 2
+                    },
+                    {
+                      "color": "green",
+                      "value": 3
+                    },
+                    {
+                      "color": "orange",
+                      "value": 4
+                    },
+                    {
+                      "color": "red",
+                      "value": 5
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
       }
     },
     {
@@ -469,7 +550,8 @@
       "fieldConfig": {
         "defaults": {},
         "overrides": []
-      }
+      },
+      "description": "Garmin only records splits when the device creates laps (auto-lap or manual lap button)."
     }
   ],
   "refresh": "",

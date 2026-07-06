@@ -7,13 +7,25 @@
   "links": [],
   "panels": [
     {
+      "type": "row",
+      "title": "Last month summary",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "panels": []
+    },
+    {
       "type": "stat",
       "title": "Activities",
       "gridPos": {
-        "h": 4,
+        "h": 3,
         "w": 4,
         "x": 0,
-        "y": 0
+        "y": 1
       },
       "datasource": {
         "type": "barnesc-garminconnect-datasource",
@@ -25,6 +37,8 @@
           "queryType": "activities"
         }
       ],
+      "timeFrom": "1M",
+      "hideTimeOverride": true,
       "options": {
         "reduceOptions": {
           "values": false,
@@ -33,7 +47,7 @@
           ],
           "fields": "/^id$/"
         },
-        "colorMode": "value",
+        "colorMode": "none",
         "graphMode": "none"
       }
     },
@@ -41,10 +55,10 @@
       "type": "stat",
       "title": "Distance",
       "gridPos": {
-        "h": 4,
-        "w": 4,
+        "h": 3,
+        "w": 5,
         "x": 4,
-        "y": 0
+        "y": 1
       },
       "datasource": {
         "type": "barnesc-garminconnect-datasource",
@@ -64,18 +78,20 @@
           ],
           "fields": "/^distance$/"
         },
-        "colorMode": "value",
+        "colorMode": "none",
         "graphMode": "none"
-      }
+      },
+      "timeFrom": "1M",
+      "hideTimeOverride": true
     },
     {
       "type": "stat",
       "title": "Duration",
       "gridPos": {
-        "h": 4,
-        "w": 4,
-        "x": 8,
-        "y": 0
+        "h": 3,
+        "w": 5,
+        "x": 9,
+        "y": 1
       },
       "datasource": {
         "type": "barnesc-garminconnect-datasource",
@@ -95,18 +111,20 @@
           ],
           "fields": "/^duration$/"
         },
-        "colorMode": "value",
+        "colorMode": "none",
         "graphMode": "none"
-      }
+      },
+      "timeFrom": "1M",
+      "hideTimeOverride": true
     },
     {
       "type": "stat",
       "title": "Elevation gain",
       "gridPos": {
-        "h": 4,
-        "w": 4,
-        "x": 12,
-        "y": 0
+        "h": 3,
+        "w": 5,
+        "x": 14,
+        "y": 1
       },
       "datasource": {
         "type": "barnesc-garminconnect-datasource",
@@ -126,18 +144,20 @@
           ],
           "fields": "/^elevation_gain$/"
         },
-        "colorMode": "value",
+        "colorMode": "none",
         "graphMode": "none"
-      }
+      },
+      "timeFrom": "1M",
+      "hideTimeOverride": true
     },
     {
       "type": "stat",
       "title": "Calories",
       "gridPos": {
-        "h": 4,
-        "w": 4,
-        "x": 16,
-        "y": 0
+        "h": 3,
+        "w": 5,
+        "x": 19,
+        "y": 1
       },
       "datasource": {
         "type": "barnesc-garminconnect-datasource",
@@ -157,48 +177,18 @@
           ],
           "fields": "/^calories$/"
         },
-        "colorMode": "value",
+        "colorMode": "none",
         "graphMode": "none"
-      }
-    },
-    {
-      "type": "stat",
-      "title": "Resting HR",
-      "gridPos": {
-        "h": 4,
-        "w": 4,
-        "x": 20,
-        "y": 0
       },
-      "datasource": {
-        "type": "barnesc-garminconnect-datasource",
-        "uid": "${datasource}"
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "queryType": "metric",
-          "metric": "resting_heart_rate"
-        }
-      ],
-      "options": {
-        "reduceOptions": {
-          "values": false,
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "/^resting_heart_rate$/"
-        },
-        "colorMode": "value",
-        "graphMode": "area"
-      }
+      "timeFrom": "1M",
+      "hideTimeOverride": true
     },
     {
       "type": "timeseries",
       "title": "Distance / Elevation gain per activity",
       "gridPos": {
-        "h": 9,
-        "w": 12,
+        "h": 6,
+        "w": 15,
         "x": 0,
         "y": 4
       },
@@ -230,17 +220,240 @@
             "barAlignment": 0
           }
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "elevation_gain"
+            },
+            "properties": [
+              {
+                "id": "custom.axisPlacement",
+                "value": "right"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "geomap",
+      "title": "Activities on map",
+      "gridPos": {
+        "h": 19,
+        "w": 9,
+        "x": 15,
+        "y": 4
+      },
+      "datasource": {
+        "type": "barnesc-garminconnect-datasource",
+        "uid": "${datasource}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "queryType": "activities"
+        }
+      ],
+      "options": {
+        "basemap": {
+          "name": "Basemap",
+          "type": "default"
+        },
+        "layers": [
+          {
+            "name": "Activities",
+            "type": "markers",
+            "tooltip": true,
+            "location": {
+              "mode": "coords",
+              "latitude": "lat",
+              "longitude": "lon"
+            },
+            "config": {
+              "showLegend": false,
+              "style": {
+                "color": {
+                  "fixed": "super-light-blue"
+                },
+                "opacity": 0.7,
+                "size": {
+                  "field": "distance",
+                  "fixed": 5,
+                  "min": 4,
+                  "max": 12
+                },
+                "symbol": {
+                  "fixed": "img/icons/marker/circle.svg",
+                  "mode": "fixed"
+                }
+              }
+            }
+          }
+        ],
+        "view": {
+          "id": "fit",
+          "zoom": 15,
+          "allLayers": true
+        },
+        "controls": {
+          "showZoom": true,
+          "mouseWheelZoom": false,
+          "showAttribution": true
+        },
+        "tooltip": {
+          "mode": "details"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "name"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Open activity",
+                    "url": "/d/garmin-activity/garmin-activity?var-activity=${__data.fields.id}&from=${__data.fields.time.numeric}&to=${__data.fields.end_time.numeric}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "table",
+      "title": "Activities",
+      "gridPos": {
+        "h": 13,
+        "w": 15,
+        "x": 0,
+        "y": 10
+      },
+      "datasource": {
+        "type": "barnesc-garminconnect-datasource",
+        "uid": "${datasource}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "queryType": "activities"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "sortBy",
+          "options": {
+            "sort": [
+              {
+                "field": "time",
+                "desc": true
+              }
+            ]
+          }
+        }
+      ],
+      "options": {
+        "showHeader": true
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "id"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Open activity",
+                    "url": "/d/garmin-activity/garmin-activity?var-activity=${__data.fields.id}&from=${__data.fields.time.numeric}&to=${__data.fields.end_time.numeric}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "end_time"
+            },
+            "properties": [
+              {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "lat"
+            },
+            "properties": [
+              {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "lon"
+            },
+            "properties": [
+              {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "end_lat"
+            },
+            "properties": [
+              {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "end_lon"
+            },
+            "properties": [
+              {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
+          }
+        ]
       }
     },
     {
       "type": "timeseries",
       "title": "Body Battery",
       "gridPos": {
-        "h": 9,
+        "h": 8,
         "w": 12,
-        "x": 12,
-        "y": 4
+        "x": 0,
+        "y": 23
       },
       "datasource": {
         "type": "barnesc-garminconnect-datasource",
@@ -266,42 +479,12 @@
     },
     {
       "type": "timeseries",
-      "title": "Steps",
-      "gridPos": {
-        "h": 9,
-        "w": 12,
-        "x": 0,
-        "y": 13
-      },
-      "datasource": {
-        "type": "barnesc-garminconnect-datasource",
-        "uid": "${datasource}"
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "queryType": "metric",
-          "metric": "steps"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "custom": {
-            "drawStyle": "bars",
-            "fillOpacity": 60
-          }
-        },
-        "overrides": []
-      }
-    },
-    {
-      "type": "timeseries",
       "title": "Sleep",
       "gridPos": {
-        "h": 9,
+        "h": 8,
         "w": 12,
         "x": 12,
-        "y": 13
+        "y": 23
       },
       "datasource": {
         "type": "barnesc-garminconnect-datasource",
@@ -341,12 +524,42 @@
     },
     {
       "type": "timeseries",
+      "title": "Steps",
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 31
+      },
+      "datasource": {
+        "type": "barnesc-garminconnect-datasource",
+        "uid": "${datasource}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "queryType": "metric",
+          "metric": "steps"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 60
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "timeseries",
       "title": "Resting HR / HRV",
       "gridPos": {
-        "h": 9,
-        "w": 12,
-        "x": 0,
-        "y": 22
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 31
       },
       "datasource": {
         "type": "barnesc-garminconnect-datasource",
@@ -377,10 +590,10 @@
       "type": "timeseries",
       "title": "Stress / Training readiness",
       "gridPos": {
-        "h": 9,
-        "w": 12,
-        "x": 12,
-        "y": 22
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 31
       },
       "datasource": {
         "type": "barnesc-garminconnect-datasource",
@@ -409,52 +622,12 @@
     },
     {
       "type": "table",
-      "title": "Activities",
-      "gridPos": {
-        "h": 10,
-        "w": 14,
-        "x": 0,
-        "y": 31
-      },
-      "datasource": {
-        "type": "barnesc-garminconnect-datasource",
-        "uid": "${datasource}"
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "queryType": "activities"
-        }
-      ],
-      "transformations": [
-        {
-          "id": "sortBy",
-          "options": {
-            "sort": [
-              {
-                "field": "time",
-                "desc": true
-              }
-            ]
-          }
-        }
-      ],
-      "options": {
-        "showHeader": true
-      },
-      "fieldConfig": {
-        "defaults": {},
-        "overrides": []
-      }
-    },
-    {
-      "type": "table",
       "title": "Personal records",
       "gridPos": {
-        "h": 10,
-        "w": 10,
-        "x": 14,
-        "y": 31
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 39
       },
       "datasource": {
         "type": "barnesc-garminconnect-datasource",
@@ -471,17 +644,59 @@
       },
       "fieldConfig": {
         "defaults": {},
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "activity_id"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Open activity",
+                    "url": "/d/garmin-activity/garmin-activity?var-activity=${__data.fields.activity_id}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "type_id"
+            },
+            "properties": [
+              {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "raw_value"
+            },
+            "properties": [
+              {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
+          }
+        ]
       }
     },
     {
       "type": "table",
       "title": "Gear",
       "gridPos": {
-        "h": 8,
-        "w": 14,
-        "x": 0,
-        "y": 41
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 39
       },
       "datasource": {
         "type": "barnesc-garminconnect-datasource",
@@ -505,10 +720,10 @@
       "type": "table",
       "title": "Devices",
       "gridPos": {
-        "h": 8,
-        "w": 10,
-        "x": 14,
-        "y": 41
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 48
       },
       "datasource": {
         "type": "barnesc-garminconnect-datasource",
@@ -551,7 +766,7 @@
     ]
   },
   "time": {
-    "from": "now-30d",
+    "from": "now-90d",
     "to": "now"
   },
   "timepicker": {},

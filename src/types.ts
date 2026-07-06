@@ -3,13 +3,19 @@ import { DataQuery } from '@grafana/schema';
 
 export type QueryType =
   | 'activities'
+  | 'sport_totals'
   | 'track'
   | 'metric'
   | 'gear'
   | 'devices'
   | 'personal_records'
   | 'splits'
-  | 'hr_zones';
+  | 'hr_zones'
+  | 'hr_zone_config'
+  | 'power_zone_config';
+
+export type SpeedUnit = 'kmh' | 'mph' | 'ms';
+export type UnitSystem = 'metric' | 'imperial';
 
 export interface MyQuery extends DataQuery {
   queryType: QueryType;
@@ -27,6 +33,8 @@ export const DEFAULT_QUERY: Partial<MyQuery> = {
 export interface MyDataSourceOptions extends DataSourceJsonData {
   email?: string;
   tokenFile?: string;
+  speedUnit?: SpeedUnit;
+  unitSystem?: UnitSystem;
 }
 
 /**
@@ -34,5 +42,4 @@ export interface MyDataSourceOptions extends DataSourceJsonData {
  */
 export interface MySecureJsonData {
   password?: string;
-  mfaCode?: string;
 }

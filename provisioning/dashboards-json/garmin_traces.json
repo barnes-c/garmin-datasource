@@ -7,14 +7,14 @@
     {
       "type": "table",
       "title": "Garmin API requests — span durations",
-      "description": "Every call the plugin makes to the Garmin Connect API, with duration. garmin.day spans are the per-day fan-out of metrics like hydration or sleep.",
+      "description": "Every call the plugin makes to the Garmin Connect API, with duration. Per-day fan-out spans (garmin.<metric>.day) are excluded here — open a trace to see them in the waterfall.",
       "gridPos": { "h": 12, "w": 24, "x": 0, "y": 0 },
       "datasource": { "type": "tempo", "uid": "tempo" },
       "targets": [
         {
           "refId": "A",
           "queryType": "traceql",
-          "query": "{name=~\"garmin.*\"}",
+          "query": "{name=~\"garmin\\\\..*\" && name!~\".*\\\\.day\"}",
           "tableType": "spans",
           "limit": 100,
           "spss": 20

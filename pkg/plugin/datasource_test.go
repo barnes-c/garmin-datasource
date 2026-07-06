@@ -11,8 +11,8 @@ import (
 
 func TestQueryData(t *testing.T) {
 	ds := Datasource{
-		settings: &models.PluginSettings{Secrets: &models.SecretPluginSettings{}},
-		tracks:   map[int64][]trackPoint{},
+		settings:   &models.PluginSettings{Secrets: &models.SecretPluginSettings{}},
+		frameCache: map[string]cachedFrame{},
 	}
 
 	resp, err := ds.QueryData(
@@ -49,8 +49,8 @@ func (s *captureSender) Send(resp *backend.CallResourceResponse) error {
 
 func TestCallResourceMFAWithoutPendingLogin(t *testing.T) {
 	ds := Datasource{
-		settings: &models.PluginSettings{Secrets: &models.SecretPluginSettings{}},
-		tracks:   map[int64][]trackPoint{},
+		settings:   &models.PluginSettings{Secrets: &models.SecretPluginSettings{}},
+		frameCache: map[string]cachedFrame{},
 	}
 
 	sender := &captureSender{}
