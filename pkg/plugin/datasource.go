@@ -692,30 +692,29 @@ func (d *Datasource) fetchActivities(ctx context.Context, key string, qm queryMo
 
 // querySportTotals aggregates activities per sport over the time range.
 // Summing in the backend keeps the unit system intact — Grafana's groupBy
-// transformation drops field units.
+// transformation drops field units. It is derived from the activities query
+// so it shares that cache and never costs an extra Garmin request.
 func (d *Datasource) querySportTotals(ctx context.Context, qm queryModel, timeRange backend.TimeRange) backend.DataResponse {
-	key := fmt.Sprintf("sport_totals|%s|%s", qm.ActivityType, dayRange(timeRange))
-	if frame, ok := d.cacheGet(key); ok {
-		return frameResponse(frame)
+	qm.Limit = 0 // totals always cover the full range
+	resp := d.queryActivities(ctx, qm, timeRange)
+	if resp.Error != nil || len(resp.Frames) == 0 {
+		return resp
 	}
-
-	return d.coalesce(key, func() backend.DataResponse {
-		return d.fetchSportTotals(ctx, key, qm, timeRange)
-	})
+	return frameResponse(d.sportTotalsFrame(resp.Frames[0]))
 }
 
-func (d *Datasource) fetchSportTotals(ctx context.Context, key string, qm queryModel, timeRange backend.TimeRange) backend.DataResponse {
-	client, err := d.garminClient(ctx)
-	if err != nil {
-		return backend.ErrDataResponse(backend.StatusInternal, err.Error())
+func (d *Datasource) sportTotalsFrame(activities *data.Frame) *data.Frame {
+	fieldByName := func(name string) *data.Field {
+		for _, f := range activities.Fields {
+			if f.Name == name {
+				return f
+			}
+		}
+		return nil
 	}
-
-	spanCtx, span := startSpan(ctx, "garmin.sport_totals", attribute.String("activity_type", qm.ActivityType))
-	activities, err := client.ActivitiesByDate(spanCtx, timeRange.From, timeRange.To, qm.ActivityType)
-	endSpan(span, err)
-	if err != nil {
-		return errDownstream("list activities: %v", err)
-	}
+	typeField := fieldByName("type")
+	distanceField := fieldByName("distance") // already in the configured unit system
+	durationField := fieldByName("duration")
 
 	type sportTotal struct {
 		distance, duration float64
@@ -723,15 +722,16 @@ func (d *Datasource) fetchSportTotals(ctx context.Context, key string, qm queryM
 	}
 	bySport := map[string]*sportTotal{}
 	var sports []string
-	for _, a := range activities {
-		t := bySport[a.ActivityType.TypeKey]
+	for i := 0; i < activities.Rows(); i++ {
+		sport := typeField.At(i).(string)
+		t := bySport[sport]
 		if t == nil {
 			t = &sportTotal{}
-			bySport[a.ActivityType.TypeKey] = t
-			sports = append(sports, a.ActivityType.TypeKey)
+			bySport[sport] = t
+			sports = append(sports, sport)
 		}
-		t.distance += a.Distance
-		t.duration += a.Duration
+		t.distance += distanceField.At(i).(float64)
+		t.duration += durationField.At(i).(float64)
 		t.count++
 	}
 	sort.Slice(sports, func(i, j int) bool { return bySport[sports[i]].distance > bySport[sports[j]].distance })
@@ -741,7 +741,7 @@ func (d *Datasource) fetchSportTotals(ctx context.Context, key string, qm queryM
 	durations := make([]float64, n)
 	counts := make([]int64, n)
 	for i, s := range sports {
-		distances[i] = d.distanceFromMeters(bySport[s].distance)
+		distances[i] = bySport[s].distance
 		durations[i] = bySport[s].duration
 		counts[i] = bySport[s].count
 	}
@@ -754,9 +754,7 @@ func (d *Datasource) fetchSportTotals(ctx context.Context, key string, qm queryM
 	)
 	setFieldUnits(frame, map[int]string{1: d.distanceUnitID(), 2: "s"})
 	frame.Meta = &data.FrameMeta{PreferredVisualization: data.VisTypeTable}
-
-	d.cachePut(key, frame, rangeTTL(timeRange))
-	return frameResponse(frame)
+	return frame
 }
 
 func (d *Datasource) queryMetric(ctx context.Context, qm queryModel, timeRange backend.TimeRange) backend.DataResponse {

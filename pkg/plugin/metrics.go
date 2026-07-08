@@ -100,7 +100,7 @@ func gmtTime(s string) (time.Time, bool) {
 	return time.Time{}, false
 }
 
-// partialNotice reports days the per-day fan-out could not fetch, so sparse
+// partialNotice reports requests the fan-out could not fetch, so sparse
 // panels are distinguishable from sparse data.
 func partialNotice(name string, failed, total int, firstErr error) []data.Notice {
 	if failed == 0 {
@@ -108,22 +108,29 @@ func partialNotice(name string, failed, total int, firstErr error) []data.Notice
 	}
 	return []data.Notice{{
 		Severity: data.NoticeSeverityWarning,
-		Text:     fmt.Sprintf("%s: %d of %d days could not be fetched (first error: %v)", name, failed, total, firstErr),
+		Text:     fmt.Sprintf("%s: %d of %d requests failed (first error: %v)", name, failed, total, firstErr),
 	}}
 }
 
 // perDay fetches a day-keyed Garmin resource for every day in the range with
 // bounded concurrency. Days that fail are returned as nil; the failure count
 // and first error are reported alongside so callers can distinguish "no data"
-// from "all failed".
+// from "all failed". Ranges beyond maxMetricDays are clamped to the most
+// recent maxMetricDays days with a notice, matching how range endpoints
+// degrade instead of erroring the whole panel.
 func perDay[V any](ctx context.Context, client *garminconnect.Client, from, to time.Time, name string,
 	get func(*garminconnect.Client, context.Context, time.Time) (*V, error),
-) (days []time.Time, results []*V, failed int, firstErr error) {
+) (days []time.Time, results []*V, failed int, notices []data.Notice, firstErr error) {
 	for d := from.Truncate(24 * time.Hour); !d.After(to); d = d.AddDate(0, 0, 1) {
 		days = append(days, d)
 	}
 	if len(days) > maxMetricDays {
-		return nil, nil, 0, fmt.Errorf("time range spans %d days; %s supports at most %d", len(days), name, maxMetricDays)
+		requested := len(days)
+		days = days[requested-maxMetricDays:]
+		notices = append(notices, data.Notice{
+			Severity: data.NoticeSeverityWarning,
+			Text:     fmt.Sprintf("%s needs one request per day; showing the most recent %d of the requested %d days", name, maxMetricDays, requested),
+		})
 	}
 
 	results = make([]*V, len(days))
@@ -153,17 +160,14 @@ func perDay[V any](ctx context.Context, client *garminconnect.Client, from, to t
 		}(i, d)
 	}
 	wg.Wait()
-	return days, results, failed, firstErr
+	return days, results, failed, notices, firstErr
 }
 
 func perDayValue[V any](name string, get func(*garminconnect.Client, context.Context, time.Time) (*V, error),
 	value func(*V) (float64, bool),
 ) metricFetch {
 	return func(ctx context.Context, _ *Datasource, client *garminconnect.Client, from, to time.Time) ([]metricPoint, []data.Notice, error) {
-		days, results, failed, firstErr := perDay(ctx, client, from, to, name, get)
-		if results == nil {
-			return nil, nil, firstErr
-		}
+		days, results, failed, notices, firstErr := perDay(ctx, client, from, to, name, get)
 		var points []metricPoint
 		for i, r := range results {
 			if r == nil {
@@ -176,7 +180,7 @@ func perDayValue[V any](name string, get func(*garminconnect.Client, context.Con
 		if len(points) == 0 && firstErr != nil {
 			return nil, nil, firstErr
 		}
-		return points, partialNotice(name, failed, len(days), firstErr), nil
+		return points, append(notices, partialNotice(name, failed, len(days), firstErr)...), nil
 	}
 }
 
@@ -215,37 +219,43 @@ const (
 )
 
 // chunked calls fetch for consecutive sub-ranges of at most days days and
-// concatenates the results.
-func chunked[T any](from, to time.Time, days int, fetch func(start, end time.Time) ([]T, error)) ([]T, error) {
-	var all []T
+// concatenates the results. Failed chunks are counted rather than aborting,
+// so long ranges degrade to partial data instead of an all-or-nothing error;
+// callers report the failures via partialNotice, mirroring perDay.
+func chunked[T any](from, to time.Time, days int, fetch func(start, end time.Time) ([]T, error)) (all []T, failed, total int, firstErr error) {
 	for start := from; !start.After(to); start = start.AddDate(0, 0, days) {
 		end := start.AddDate(0, 0, days-1)
 		if end.After(to) {
 			end = to
 		}
+		total++
 		batch, err := fetch(start, end)
 		if err != nil {
-			return nil, err
+			failed++
+			if firstErr == nil {
+				firstErr = err
+			}
+			continue
 		}
 		all = append(all, batch...)
 	}
-	return all, nil
+	return all, failed, total, firstErr
 }
 
 func fetchSteps(ctx context.Context, _ *Datasource, client *garminconnect.Client, from, to time.Time) ([]metricPoint, []data.Notice, error) {
-	stats, err := chunked(from, to, chunkDaysWellness, func(start, end time.Time) ([]garminconnect.DailyStepStat, error) {
+	stats, failed, total, firstErr := chunked(from, to, chunkDaysWellness, func(start, end time.Time) ([]garminconnect.DailyStepStat, error) {
 		return client.DailySteps(ctx, start, end)
 	})
-	if err != nil {
-		return nil, nil, err
-	}
 	var points []metricPoint
 	for _, s := range stats {
 		if t, ok := day(s.CalendarDate); ok {
 			points = append(points, metricPoint{t, float64(s.TotalSteps)})
 		}
 	}
-	return points, nil, nil
+	if len(points) == 0 && firstErr != nil {
+		return nil, nil, firstErr
+	}
+	return points, partialNotice("steps", failed, total, firstErr), nil
 }
 
 func fetchRestingHeartRate(ctx context.Context, _ *Datasource, client *garminconnect.Client, from, to time.Time) ([]metricPoint, []data.Notice, error) {
@@ -330,12 +340,9 @@ func fetchFTP(ctx context.Context, _ *Datasource, client *garminconnect.Client, 
 }
 
 func fetchBodyBattery(ctx context.Context, _ *Datasource, client *garminconnect.Client, from, to time.Time) ([]metricPoint, []data.Notice, error) {
-	entries, err := chunked(from, to, chunkDaysWellness, func(start, end time.Time) ([]garminconnect.BodyBatteryEntry, error) {
+	entries, failed, total, firstErr := chunked(from, to, chunkDaysWellness, func(start, end time.Time) ([]garminconnect.BodyBatteryEntry, error) {
 		return client.BodyBattery(ctx, start, end)
 	})
-	if err != nil {
-		return nil, nil, err
-	}
 	var points []metricPoint
 	for _, e := range entries {
 		var rows [][]*float64
@@ -348,62 +355,62 @@ func fetchBodyBattery(ctx context.Context, _ *Datasource, client *garminconnect.
 			}
 		}
 	}
-	return points, nil, nil
+	if len(points) == 0 && firstErr != nil {
+		return nil, nil, firstErr
+	}
+	return points, partialNotice("body_battery", failed, total, firstErr), nil
 }
 
 func fetchEnduranceScore(ctx context.Context, _ *Datasource, client *garminconnect.Client, from, to time.Time) ([]metricPoint, []data.Notice, error) {
-	entries, err := chunked(from, to, chunkDaysScores, func(start, end time.Time) ([]garminconnect.EnduranceScoreEntry, error) {
+	entries, failed, total, firstErr := chunked(from, to, chunkDaysScores, func(start, end time.Time) ([]garminconnect.EnduranceScoreEntry, error) {
 		return client.EnduranceScore(ctx, start, end)
 	})
-	if err != nil {
-		return nil, nil, err
-	}
 	var points []metricPoint
 	for _, e := range entries {
 		if t, ok := day(e.CalendarDate); ok && e.Score > 0 {
 			points = append(points, metricPoint{t, e.Score})
 		}
 	}
-	return points, nil, nil
+	if len(points) == 0 && firstErr != nil {
+		return nil, nil, firstErr
+	}
+	return points, partialNotice("endurance_score", failed, total, firstErr), nil
 }
 
 func fetchHillScore(ctx context.Context, _ *Datasource, client *garminconnect.Client, from, to time.Time) ([]metricPoint, []data.Notice, error) {
-	entries, err := chunked(from, to, chunkDaysScores, func(start, end time.Time) ([]garminconnect.HillScoreEntry, error) {
+	entries, failed, total, firstErr := chunked(from, to, chunkDaysScores, func(start, end time.Time) ([]garminconnect.HillScoreEntry, error) {
 		return client.HillScore(ctx, start, end)
 	})
-	if err != nil {
-		return nil, nil, err
-	}
 	var points []metricPoint
 	for _, e := range entries {
 		if t, ok := day(e.CalendarDate); ok && e.HillScore > 0 {
 			points = append(points, metricPoint{t, e.HillScore})
 		}
 	}
-	return points, nil, nil
+	if len(points) == 0 && firstErr != nil {
+		return nil, nil, firstErr
+	}
+	return points, partialNotice("hill_score", failed, total, firstErr), nil
 }
 
 func fetchRunningTolerance(ctx context.Context, _ *Datasource, client *garminconnect.Client, from, to time.Time) ([]metricPoint, []data.Notice, error) {
-	entries, err := chunked(from, to, chunkDaysScores, func(start, end time.Time) ([]garminconnect.RunningToleranceEntry, error) {
+	entries, failed, total, firstErr := chunked(from, to, chunkDaysScores, func(start, end time.Time) ([]garminconnect.RunningToleranceEntry, error) {
 		return client.RunningTolerance(ctx, start, end)
 	})
-	if err != nil {
-		return nil, nil, err
-	}
 	var points []metricPoint
 	for _, e := range entries {
 		if t, ok := day(e.CalendarDate); ok && e.Score > 0 {
 			points = append(points, metricPoint{t, e.Score})
 		}
 	}
-	return points, nil, nil
+	if len(points) == 0 && firstErr != nil {
+		return nil, nil, firstErr
+	}
+	return points, partialNotice("running_tolerance", failed, total, firstErr), nil
 }
 
 func fetchSleep(ctx context.Context, _ *Datasource, client *garminconnect.Client, from, to time.Time) (*data.Frame, []data.Notice, error) {
-	days, results, failed, firstErr := perDay(ctx, client, from, to, "sleep", (*garminconnect.Client).SleepData)
-	if results == nil {
-		return nil, nil, firstErr
-	}
+	days, results, failed, notices, firstErr := perDay(ctx, client, from, to, "sleep", (*garminconnect.Client).SleepData)
 	var times []time.Time
 	var total, deep, light, rem, awake []float64
 	for i, s := range results {
@@ -433,7 +440,7 @@ func fetchSleep(ctx context.Context, _ *Datasource, client *garminconnect.Client
 	for _, f := range frame.Fields[1:] {
 		f.Config = &data.FieldConfig{Unit: "s"}
 	}
-	return frame, partialNotice("sleep", failed, len(days), firstErr), nil
+	return frame, append(notices, partialNotice("sleep", failed, len(days), firstErr)...), nil
 }
 
 func fetchBodyComposition(ctx context.Context, d *Datasource, client *garminconnect.Client, from, to time.Time) (*data.Frame, []data.Notice, error) {
@@ -548,7 +555,7 @@ func fetchRacePredictions(ctx context.Context, _ *Datasource, client *garminconn
 		data.NewField("marathon", nil, full),
 	)
 	for _, f := range frame.Fields[1:] {
-		f.Config = &data.FieldConfig{Unit: "dthms"} // h:mm:ss — "4 hours" is useless for a race time
+		f.Config = &data.FieldConfig{Unit: "dthms"}
 	}
 	return frame, nil, nil
 }
@@ -569,6 +576,8 @@ func fetchLactateThreshold(ctx context.Context, d *Datasource, client *garmincon
 		f := float64(*v)
 		return &f
 	}
+	// API order is not guaranteed; lastNotNull reductions need ascending time.
+	sort.Slice(entries, func(i, j int) bool { return entries[i].CalendarDate < entries[j].CalendarDate })
 	for _, e := range entries {
 		t, ok := day(e.CalendarDate)
 		if !ok {

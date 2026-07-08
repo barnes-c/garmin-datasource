@@ -3,7 +3,7 @@ module github.com/barnesc/garminconnect
 go 1.26.4
 
 require (
-	github.com/barnes-c/go-garminconnect v0.6.1
+	github.com/barnes-c/go-garminconnect v0.7.1
 	github.com/grafana/grafana-plugin-sdk-go v0.292.2
 	go.opentelemetry.io/otel v1.44.0
 	go.opentelemetry.io/otel/trace v1.44.0

@@ -107,29 +107,29 @@ export function QueryEditor({ query, onChange, onRunQuery }: Props) {
           />
         </InlineField>
       )}
+      {(queryType === 'activities' || queryType === 'sport_totals') && (
+        <InlineField label="Type" labelWidth={14} tooltip="Optional activity type filter, e.g. cycling or running">
+          <Input
+            id="query-editor-activity-type"
+            onChange={onActivityTypeChange}
+            onBlur={onRunQuery}
+            value={activityType || ''}
+            placeholder="all types"
+            width={20}
+          />
+        </InlineField>
+      )}
       {queryType === 'activities' && (
-        <>
-          <InlineField label="Type" labelWidth={14} tooltip="Optional activity type filter, e.g. cycling or running">
-            <Input
-              id="query-editor-activity-type"
-              onChange={onActivityTypeChange}
-              onBlur={onRunQuery}
-              value={activityType || ''}
-              placeholder="all types"
-              width={20}
-            />
-          </InlineField>
-          <InlineField label="Limit" labelWidth={14} tooltip="Maximum number of activities (empty = all in range)">
-            <Input
-              id="query-editor-limit"
-              onChange={onLimitChange}
-              onBlur={onRunQuery}
-              value={limit ?? ''}
-              type="number"
-              width={20}
-            />
-          </InlineField>
-        </>
+        <InlineField label="Limit" labelWidth={14} tooltip="Maximum number of activities (empty = all in range)">
+          <Input
+            id="query-editor-limit"
+            onChange={onLimitChange}
+            onBlur={onRunQuery}
+            value={limit ?? ''}
+            type="number"
+            width={20}
+          />
+        </InlineField>
       )}
     </Stack>
   );

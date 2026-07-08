@@ -8,8 +8,8 @@ github.com/apache/arrow-go/v18 v18.6.0 h1:GX/Jyd3R7mCLiECAwY9FWbbaYblie2WXBSz4Sw
 github.com/apache/arrow-go/v18 v18.6.0/go.mod h1:gm3MiPpY82fLYK5VKPB3WoJbsiLVDfT7flD5/vHReKw=
 github.com/apache/thrift v0.23.0 h1:wKR6YnefQSEnxpEfmgTPuJibNG4bF0p2TK34tHLWi3s=
 github.com/apache/thrift v0.23.0/go.mod h1:zPt6WxgvTOM6hF92y8C+MkEM5LMxZuk4JcQOiU4Esvs=
-github.com/barnes-c/go-garminconnect v0.6.1 h1:JlzUwPU/NaU9umb2IwflC4VXpOkMmP6x3zYG7xQ4+yA=
-github.com/barnes-c/go-garminconnect v0.6.1/go.mod h1:rH2iCmVg6+NFs1joH8weUgn6RJyxk8Z6GZP1cdKbiAk=
+github.com/barnes-c/go-garminconnect v0.7.1 h1:q1nfn9ISOwviZoW6J+ZUdcFotY0PqbtEX5Rx2409PNQ=
+github.com/barnes-c/go-garminconnect v0.7.1/go.mod h1:gKe/iKeRfNt8/OgG5XwVEWDTw2J62HBAwLH5Rapua0o=
 github.com/beorn7/perks v1.0.1 h1:VlbKKnNfV8bJzeqoa4cOKqO6bYr3WgKZxO8Z16+hsOM=
 github.com/beorn7/perks v1.0.1/go.mod h1:G2ZrVWU2WbWT9wwq4/hrbKbnv/1ERSJQ0ibhJ6rlkpw=
 github.com/bufbuild/protocompile v0.14.1 h1:iA73zAf/fyljNjQKwYzUHD6AD4R8KMasmwa/FBatYVw=

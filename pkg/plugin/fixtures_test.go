@@ -58,7 +58,7 @@ func newTestDatasource(f *fixtureServer, settings models.PluginSettings) *Dataso
 	}
 	return &Datasource{
 		settings:   &settings,
-		client:     garminconnect.NewClient("", garminconnect.WithBaseURL(f.URL), garminconnect.WithToken("test-token")),
+		client:     garminconnect.NewClient("", garminconnect.WithBaseURL(f.URL), garminconnect.WithToken("test-token"), garminconnect.WithDisplayName("test-user")),
 		frameCache: map[string]cachedFrame{},
 	}
 }

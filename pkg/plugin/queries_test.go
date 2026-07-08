@@ -231,11 +231,41 @@ func TestQuerySportTotals(t *testing.T) {
 	if got := fieldByName(t, frame, "activities").At(1).(int64); got != 1 {
 		t.Errorf("expected 1 running activity, got %d", got)
 	}
+
+	// Derived from the activities query: a following activities query is
+	// served from the same cache, with one API call in total.
+	if resp := d.queryActivities(context.Background(), queryModel{}, timeRange(7)); resp.Error != nil {
+		t.Fatal(resp.Error)
+	}
+	if got := f.count("/activitylist-service/activities/search/activities"); got != 1 {
+		t.Errorf("expected sport totals to share the activities fetch, got %d API calls", got)
+	}
+}
+
+func TestLactateThresholdSortedAscending(t *testing.T) {
+	// The endpoint returns a list with no order guarantee; frame must be
+	// ascending so lastNotNull reductions pick the newest measurement.
+	f := newFixtureServer(t, map[string]string{
+		"/biometric-service/biometric/latestLactateThreshold": `[
+			{"calendarDate": "2026-07-01", "speed": 3.2, "hearRate": 177},
+			{"calendarDate": "2026-05-01", "speed": 3.0, "hearRate": 171}
+		]`,
+	})
+	d := newTestDatasource(f, models.PluginSettings{})
+
+	resp := d.queryMetric(context.Background(), queryModel{Metric: "lactate_threshold"}, timeRange(90))
+	if resp.Error != nil {
+		t.Fatal(resp.Error)
+	}
+	hr := fieldByName(t, resp.Frames[0], "hr_running")
+	if got := hr.At(1).(*float64); got == nil || *got != 177 {
+		t.Errorf("expected newest measurement (177) last, got %v", got)
+	}
 }
 
 func TestScoreChunking(t *testing.T) {
 	f := newFixtureServer(t, map[string]string{
-		"/metrics-service/metrics/endurancescore/stats": `{"enduranceScoreDTO": {"calendarDate": "2026-06-01", "overallScore": 5000}}`,
+		"/metrics-service/metrics/endurancescore/stats": `{"groupMap": {"2026-06-01": {"groupAverage": 5000}}}`,
 	})
 	d := newTestDatasource(f, models.PluginSettings{})
 
@@ -393,15 +423,46 @@ func TestPerDayPartialFailure(t *testing.T) {
 	}
 }
 
-func TestPerDayRangeCap(t *testing.T) {
-	get := func(_ *garminconnect.Client, _ context.Context, _ time.Time) (*int, error) {
-		t.Fatal("must not fetch when range exceeds cap")
-		return nil, nil
+func TestPerDayRangeClamps(t *testing.T) {
+	var calls atomic.Int64
+	get := func(_ *garminconnect.Client, _ context.Context, d time.Time) (*int, error) {
+		calls.Add(1)
+		v := d.Day()
+		return &v, nil
 	}
-	fetch := perDayValue("test", get, func(v *int) (float64, bool) { return 0, false })
-	_, _, err := fetch(context.Background(), nil, nil, time.Now().AddDate(0, 0, -200), time.Now())
-	if err == nil {
-		t.Fatal("expected range cap error")
+	fetch := perDayValue("test", get, func(v *int) (float64, bool) { return float64(*v), true })
+
+	points, notices, err := fetch(context.Background(), nil, nil, time.Now().AddDate(0, 0, -200), time.Now())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if calls.Load() != maxMetricDays {
+		t.Errorf("expected range clamped to %d day calls, got %d", maxMetricDays, calls.Load())
+	}
+	if len(points) != maxMetricDays {
+		t.Errorf("expected %d points, got %d", maxMetricDays, len(points))
+	}
+	if len(notices) != 1 || notices[0].Severity != data.NoticeSeverityWarning {
+		t.Fatalf("expected a clamp warning notice, got %v", notices)
+	}
+}
+
+func TestChunkedPartialFailure(t *testing.T) {
+	calls := 0
+	from := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
+	to := from.AddDate(0, 0, 60) // 3 chunks of 28 days
+	got, failed, total, firstErr := chunked(from, to, 28, func(_, _ time.Time) ([]int, error) {
+		calls++
+		if calls == 2 {
+			return nil, errors.New("boom")
+		}
+		return []int{calls}, nil
+	})
+	if total != 3 || failed != 1 || firstErr == nil {
+		t.Fatalf("expected 3 chunks with 1 failure, got total=%d failed=%d err=%v", total, failed, firstErr)
+	}
+	if len(got) != 2 {
+		t.Errorf("expected results from the 2 successful chunks, got %v", got)
 	}
 }
 
