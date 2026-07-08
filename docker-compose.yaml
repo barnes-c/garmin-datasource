@@ -6,13 +6,15 @@ services:
     environment:
       GARMIN_EMAIL: ${GARMIN_EMAIL:-}
       GARMIN_PASSWORD: ${GARMIN_PASSWORD:-}
-      GARMIN_MFA_CODE: ${GARMIN_MFA_CODE:-}
       GF_TRACING_OPENTELEMETRY_OTLP_ADDRESS: tempo:4317
       GF_TRACING_OPENTELEMETRY_OTLP_PROPAGATION: w3c
+      GF_LOG_MODE: console file
     volumes:
       - ./.tokens:/tokens
+      - grafana-logs:/var/log/grafana
     depends_on:
       - tempo
+      - loki
 
   tempo:
     image: grafana/tempo:latest
@@ -21,3 +23,20 @@ services:
       - ./tempo.yaml:/etc/tempo.yaml
     ports:
       - 3200:3200
+
+  loki:
+    image: grafana/loki:latest
+    ports:
+      - 3100:3100
+
+  promtail:
+    image: grafana/promtail:latest
+    command: ['-config.file=/etc/promtail.yaml']
+    volumes:
+      - ./promtail.yaml:/etc/promtail.yaml
+      - grafana-logs:/var/log/grafana
+    depends_on:
+      - loki
+
+volumes:
+  grafana-logs:

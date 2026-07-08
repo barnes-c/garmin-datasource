@@ -8,6 +8,7 @@ type Props = QueryEditorProps<DataSource, MyQuery, MyDataSourceOptions>;
 
 const queryTypes: Array<ComboboxOption<QueryType>> = [
   { label: 'Activities', value: 'activities', description: 'Activities in the dashboard time range as a table' },
+  { label: 'Sport totals', value: 'sport_totals', description: 'Distance, time and activity count per sport in the dashboard time range' },
   { label: 'Track', value: 'track', description: 'GPS trackpoints of one activity, for the Geomap route layer' },
   { label: 'Metric', value: 'metric', description: 'Health/training metric over the dashboard time range' },
   { label: 'Splits', value: 'splits', description: 'Per-split stats of one activity' },
@@ -15,6 +16,8 @@ const queryTypes: Array<ComboboxOption<QueryType>> = [
   { label: 'Gear', value: 'gear', description: 'Registered gear with lifetime usage' },
   { label: 'Devices', value: 'devices', description: 'Registered Garmin devices' },
   { label: 'Personal records', value: 'personal_records', description: 'Personal records table' },
+  { label: 'HR zone settings', value: 'hr_zone_config', description: 'Configured heart rate zones per sport' },
+  { label: 'Power zone settings', value: 'power_zone_config', description: 'Configured power zones and FTP per sport' },
 ];
 
 const needsActivityId = (queryType?: string) =>
@@ -31,7 +34,7 @@ const metrics: Array<ComboboxOption<string>> = [
   { label: 'HRV', value: 'hrv', description: 'Nightly heart rate variability average (ms)' },
   { label: 'Hill score', value: 'hill_score', description: 'Daily hill score' },
   { label: 'Hydration', value: 'hydration', description: 'Daily water intake (ml)' },
-  { label: 'Intensity minutes', value: 'intensity_minutes', description: 'Daily moderate + vigorous minutes' },
+  { label: 'Intensity minutes', value: 'intensity_minutes', description: 'Daily intensity minutes (vigorous counts double, like Garmin)' },
   { label: 'Lactate threshold', value: 'lactate_threshold', description: 'Latest LT speed and heart rates' },
   { label: 'Race predictions', value: 'race_predictions', description: 'Predicted 5k/10k/half/marathon times' },
   { label: 'Respiration', value: 'respiration', description: 'Daily average waking breaths/min' },
@@ -104,29 +107,29 @@ export function QueryEditor({ query, onChange, onRunQuery }: Props) {
           />
         </InlineField>
       )}
+      {(queryType === 'activities' || queryType === 'sport_totals') && (
+        <InlineField label="Type" labelWidth={14} tooltip="Optional activity type filter, e.g. cycling or running">
+          <Input
+            id="query-editor-activity-type"
+            onChange={onActivityTypeChange}
+            onBlur={onRunQuery}
+            value={activityType || ''}
+            placeholder="all types"
+            width={20}
+          />
+        </InlineField>
+      )}
       {queryType === 'activities' && (
-        <>
-          <InlineField label="Type" labelWidth={14} tooltip="Optional activity type filter, e.g. cycling or running">
-            <Input
-              id="query-editor-activity-type"
-              onChange={onActivityTypeChange}
-              onBlur={onRunQuery}
-              value={activityType || ''}
-              placeholder="all types"
-              width={20}
-            />
-          </InlineField>
-          <InlineField label="Limit" labelWidth={14} tooltip="Maximum number of activities (empty = all in range)">
-            <Input
-              id="query-editor-limit"
-              onChange={onLimitChange}
-              onBlur={onRunQuery}
-              value={limit ?? ''}
-              type="number"
-              width={20}
-            />
-          </InlineField>
-        </>
+        <InlineField label="Limit" labelWidth={14} tooltip="Maximum number of activities (empty = all in range)">
+          <Input
+            id="query-editor-limit"
+            onChange={onLimitChange}
+            onBlur={onRunQuery}
+            value={limit ?? ''}
+            type="number"
+            width={20}
+          />
+        </InlineField>
       )}
     </Stack>
   );

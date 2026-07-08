@@ -8,14 +8,15 @@ import (
 )
 
 type PluginSettings struct {
-	Email     string                `json:"email"`
-	TokenFile string                `json:"tokenFile"`
-	Secrets   *SecretPluginSettings `json:"-"`
+	Email      string                `json:"email"`
+	TokenFile  string                `json:"tokenFile"`
+	Secrets    *SecretPluginSettings `json:"-"`
+	SpeedUnit  string                `json:"speedUnit"`  // kmh (default), mph, ms
+	UnitSystem string                `json:"unitSystem"` // metric (default), imperial
 }
 
 type SecretPluginSettings struct {
 	Password string `json:"password"`
-	MFACode  string `json:"mfaCode"`
 }
 
 func LoadPluginSettings(source backend.DataSourceInstanceSettings) (*PluginSettings, error) {
@@ -33,6 +34,5 @@ func LoadPluginSettings(source backend.DataSourceInstanceSettings) (*PluginSetti
 func loadSecretPluginSettings(source map[string]string) *SecretPluginSettings {
 	return &SecretPluginSettings{
 		Password: source["password"],
-		MFACode:  source["mfaCode"],
 	}
 }
