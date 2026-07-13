@@ -326,16 +326,6 @@
           "zoomToActivity": true
         }
       ],
-      "transformations": [
-        {
-          "id": "filterFieldsByName",
-          "options": {
-            "include": {
-              "pattern": "^(time|elevation|power)$"
-            }
-          }
-        }
-      ],
       "options": {
         "legend": {
           "showLegend": true,
@@ -359,10 +349,42 @@
         "overrides": [
           {
             "matcher": {
-              "id": "byName",
-              "options": "power"
+              "id": "byRegexp",
+              "options": "^(track )?(time|lat|lon|heartrate|speed|distance)$"
             },
             "properties": [
+              {
+                "id": "custom.hideFrom",
+                "value": {
+                  "viz": true,
+                  "legend": true,
+                  "tooltip": true
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "^(track )?elevation$"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "elevation"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "^(power )?power$"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "power"
+              },
               {
                 "id": "custom.axisPlacement",
                 "value": "right"

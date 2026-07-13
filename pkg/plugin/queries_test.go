@@ -217,14 +217,20 @@ func TestQueryPowerZones(t *testing.T) {
 		t.Fatal(resp.Error)
 	}
 	frame := resp.Frames[0]
-	if frame.Rows() != 2 {
-		t.Fatalf("expected 2 zones, got %d", frame.Rows())
+	if frame.Rows() != 3 {
+		t.Fatalf("expected 3 zones, got %d", frame.Rows())
 	}
 	if got := fieldByName(t, frame, "time_in_zone").At(0).(float64); got != 600.5 {
 		t.Errorf("expected 600.5s in zone 1, got %v", got)
 	}
-	if got := fieldByName(t, frame, "high").At(1).(int64); got != 210 {
-		t.Errorf("expected 210 W upper bound, got %v", got)
+
+	// Upper bounds come from the next zone's lower bound; the last zone is open.
+	high := fieldByName(t, frame, "high")
+	if got := high.At(0).(*int64); got == nil || *got != 150 {
+		t.Errorf("expected 150 W upper bound for zone 1, got %v", got)
+	}
+	if got := high.At(2).(*int64); got != nil {
+		t.Errorf("expected open-ended last zone, got %v", *got)
 	}
 }
 

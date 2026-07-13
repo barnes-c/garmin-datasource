@@ -93,9 +93,12 @@ const activityDetailsFixture = `{
   ]
 }`
 
+// Garmin's timeInZones endpoints send no zoneHighBoundary; upper bounds are
+// derived from the next zone's lower bound.
 const powerZonesFixture = `[
-  {"zoneNumber": 1, "secsInZone": 600.5, "zoneLowBoundary": 0, "zoneHighBoundary": 150},
-  {"zoneNumber": 2, "secsInZone": 1200, "zoneLowBoundary": 150, "zoneHighBoundary": 210}
+  {"zoneNumber": 1, "secsInZone": 600.5, "zoneLowBoundary": 0},
+  {"zoneNumber": 2, "secsInZone": 1200, "zoneLowBoundary": 150},
+  {"zoneNumber": 3, "secsInZone": 300, "zoneLowBoundary": 210}
 ]`
 
 const trackGPXFixture = `<?xml version="1.0" encoding="UTF-8"?>

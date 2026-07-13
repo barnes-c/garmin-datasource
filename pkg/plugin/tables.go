@@ -357,19 +357,17 @@ func (d *Datasource) queryHRZones(ctx context.Context, client *garminconnect.Cli
 	numbers := make([]int64, n)
 	seconds := make([]float64, n)
 	lows := make([]int64, n)
-	highs := make([]int64, n)
 	for i, z := range zones {
 		numbers[i] = int64(z.ZoneNumber)
 		seconds[i] = z.SecsInZone
 		lows[i] = int64(z.ZoneLowBPM)
-		highs[i] = int64(z.ZoneHighBPM)
 	}
 
 	frame := data.NewFrame("hr_zones",
 		data.NewField("zone", nil, numbers),
 		data.NewField("time_in_zone", nil, seconds),
 		data.NewField("low", nil, lows),
-		data.NewField("high", nil, highs),
+		data.NewField("high", nil, zoneHighs(lows)),
 	)
 	frame.Fields[1].Config = &data.FieldConfig{Unit: "s"}
 	return tableResponse(frame)
@@ -385,20 +383,31 @@ func (d *Datasource) queryPowerZones(ctx context.Context, client *garminconnect.
 	numbers := make([]int64, n)
 	seconds := make([]float64, n)
 	lows := make([]int64, n)
-	highs := make([]int64, n)
 	for i, z := range zones {
 		numbers[i] = int64(z.ZoneNumber)
 		seconds[i] = z.SecsInZone
 		lows[i] = int64(z.ZoneLowWatts)
-		highs[i] = int64(z.ZoneHighWatts)
 	}
 
 	frame := data.NewFrame("power_zones",
 		data.NewField("zone", nil, numbers),
 		data.NewField("time_in_zone", nil, seconds),
 		data.NewField("low", nil, lows),
-		data.NewField("high", nil, highs),
+		data.NewField("high", nil, zoneHighs(lows)),
 	)
 	frame.Fields[1].Config = &data.FieldConfig{Unit: "s"}
 	return tableResponse(frame)
+}
+
+// zoneHighs derives each zone's upper bound from the next zone's lower bound;
+// Garmin's timeInZones endpoints only send zoneLowBoundary, and the last zone
+// is open-ended.
+func zoneHighs(lows []int64) []*int64 {
+	highs := make([]*int64, len(lows))
+	for i := range lows {
+		if i+1 < len(lows) {
+			highs[i] = &lows[i+1]
+		}
+	}
+	return highs
 }
