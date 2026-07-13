@@ -57,6 +57,11 @@
       "type": "dashboard",
       "name": "Garmin Fitness",
       "path": "dashboards/garmin_fitness.json"
+    },
+    {
+      "type": "dashboard",
+      "name": "Garmin Cycling",
+      "path": "dashboards/garmin_cycling.json"
     }
   ],
   "dependencies": {

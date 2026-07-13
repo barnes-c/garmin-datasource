@@ -9,10 +9,10 @@ Visualize your Garmin Connect activities, GPS tracks, and health metrics in Graf
 - **GPS tracks on the Geomap panel** — routes with per-point heart rate, speed (km/h), cumulative distance, and elevation, ready for the Route layer
 - **Activities table** over the dashboard time range, with an optional activity-type filter
 - **23 health & training metrics** as time series: steps, sleep (with stages), Body Battery, stress, HRV, SpO2, respiration, resting heart rate, hydration, intensity minutes, floors, weight & body composition, VO2max, training readiness, fitness age, endurance/hill score, running tolerance, blood pressure, race predictions, lactate threshold, cycling FTP
-- **Per-activity analysis**: lap splits and time-in-HR-zones
+- **Per-activity analysis**: lap splits, power meter samples, time in HR and power zones
 - **Gear, devices, and personal records** tables
 - **Activity template variable** for building per-activity dashboards
-- **Five bundled dashboards** (Athlete Overview, Activity, Health, Fitness, Athlete Comparison) — import them from the data source's *Dashboards* tab
+- **Six bundled dashboards** (Athlete Overview, Activity, Cycling, Health, Fitness, Athlete Comparison) — import them from the data source's *Dashboards* tab
 - **Alerting support** — alert on resting HR, HRV, weight, missed activities, and more
 - Built-in response caching and request coalescing to stay polite to Garmin's API
 
@@ -55,19 +55,22 @@ For **fully headless setups** (provisioned Grafana, nobody to click Verify), not
 | Track | GPS trackpoints of one activity: time, lat, lon, elevation, heart rate, speed, cumulative distance |
 | Metric | One health/training metric over the dashboard time range |
 | Splits | Lap splits of one activity |
+| Power | Power meter samples of one activity as a time series (W) |
 | HR zones | Time in heart rate zones of one activity |
+| Power zones | Time in power zones of one activity |
 | Gear | Registered gear with lifetime distance and activity count |
 | Devices | Registered Garmin devices with firmware and registration date |
 | Personal records | All personal records, formatted per record type |
 
-`Track`, `Splits`, and `HR zones` take an activity id and support dashboard variables (e.g. `$activity`). To create an activity picker, add a *query* variable — the editor lets you filter by activity type and limit the list.
+`Track`, `Splits`, `Power`, `HR zones`, and `Power zones` take an activity id and support dashboard variables (e.g. `$activity`). To create an activity picker, add a *query* variable — the editor lets you filter by activity type and limit the list; it offers the activities of the last year, independent of the dashboard time range. `Track` and `Power` queries have a **Fit time range** option: when the selected activity changes, the dashboard time range automatically snaps to the activity's recording window.
 
 ## Bundled dashboards
 
 Open the data source's configuration page → **Dashboards** tab → import:
 
 - **Garmin Athlete Overview** — training totals, distance/elevation trends, sleep, Body Battery, activities/gear/device/PR tables; activity rows link to the Activity dashboard
-- **Garmin Activity** — per-activity deep dive: route map (colored by heart rate), heart rate/speed/elevation vs distance, splits, time in HR zones
+- **Garmin Activity** — per-activity deep dive: route map (colored by heart rate), heart rate/speed and elevation/power charts with a linked crosshair, splits, time in HR zones; selecting an activity automatically fits the time range to it
+- **Garmin Cycling** — per-ride deep dive: route map, power meter chart, heart rate/speed, elevation, time in power and HR zones, power distribution, splits
 - **Garmin Health** — wellness trends: sleep stages, stress, HRV, SpO2, hydration, body composition
 - **Garmin Fitness** — long-term fitness trends: VO2max, endurance/hill score, running tolerance, lactate threshold, race predictions, FTP, personal records
 - **Garmin Athlete Comparison** — two athletes head-to-head over the last 30 days: mirrored training totals, overlaid distance/steps/resting HR/VO2max, side-by-side activity maps and tables; pick any two Garmin Connect data sources in the **Athlete A/B** dropdowns

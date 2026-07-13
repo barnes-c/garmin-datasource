@@ -374,3 +374,31 @@ func (d *Datasource) queryHRZones(ctx context.Context, client *garminconnect.Cli
 	frame.Fields[1].Config = &data.FieldConfig{Unit: "s"}
 	return tableResponse(frame)
 }
+
+func (d *Datasource) queryPowerZones(ctx context.Context, client *garminconnect.Client, id int64) backend.DataResponse {
+	zones, err := client.ActivityPowerZones(ctx, id)
+	if err != nil {
+		return errDownstream("fetch power zones for activity %d: %v", id, err)
+	}
+
+	n := len(zones)
+	numbers := make([]int64, n)
+	seconds := make([]float64, n)
+	lows := make([]int64, n)
+	highs := make([]int64, n)
+	for i, z := range zones {
+		numbers[i] = int64(z.ZoneNumber)
+		seconds[i] = z.SecsInZone
+		lows[i] = int64(z.ZoneLowWatts)
+		highs[i] = int64(z.ZoneHighWatts)
+	}
+
+	frame := data.NewFrame("power_zones",
+		data.NewField("zone", nil, numbers),
+		data.NewField("time_in_zone", nil, seconds),
+		data.NewField("low", nil, lows),
+		data.NewField("high", nil, highs),
+	)
+	frame.Fields[1].Config = &data.FieldConfig{Unit: "s"}
+	return tableResponse(frame)
+}

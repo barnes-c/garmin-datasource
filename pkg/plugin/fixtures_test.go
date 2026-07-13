@@ -78,6 +78,26 @@ const splitsWithLapsFixture = `{"activityId": 1, "splitSummaries": [], "lapDTOs"
   {"startTimeGMT": "2026-07-01T06:11:40.0", "distance": 5000, "duration": 690, "averageSpeed": 7.2, "averageHR": 125, "maxHR": 140}
 ]}`
 
+const activityDetailsFixture = `{
+  "activityId": 42,
+  "metricDescriptors": [
+    {"metricsIndex": 0, "key": "directTimestamp", "unit": {"key": "gmt"}},
+    {"metricsIndex": 1, "key": "directPower", "unit": {"key": "watt"}},
+    {"metricsIndex": 2, "key": "directHeartRate", "unit": {"key": "bpm"}}
+  ],
+  "activityDetailMetrics": [
+    {"metrics": [1782799200000, 210, 120]},
+    {"metrics": [1782799210000, null, 125]},
+    {"metrics": [1782799220000, 250, 130]},
+    {"metrics": [null, 999, 130]}
+  ]
+}`
+
+const powerZonesFixture = `[
+  {"zoneNumber": 1, "secsInZone": 600.5, "zoneLowBoundary": 0, "zoneHighBoundary": 150},
+  {"zoneNumber": 2, "secsInZone": 1200, "zoneLowBoundary": 150, "zoneHighBoundary": 210}
+]`
+
 const trackGPXFixture = `<?xml version="1.0" encoding="UTF-8"?>
 <gpx xmlns="http://www.topografix.com/GPX/1/1" xmlns:gpxtpx="http://www.garmin.com/xmlschemas/TrackPointExtension/v1">
   <trk><trkseg>

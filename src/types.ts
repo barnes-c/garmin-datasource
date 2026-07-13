@@ -10,7 +10,9 @@ export type QueryType =
   | 'devices'
   | 'personal_records'
   | 'splits'
+  | 'power'
   | 'hr_zones'
+  | 'power_zones'
   | 'hr_zone_config'
   | 'power_zone_config';
 
@@ -23,6 +25,8 @@ export interface MyQuery extends DataQuery {
   activityType?: string;
   limit?: number;
   metric?: string;
+  /** Fit the dashboard time range to this activity's recording window when the activity changes */
+  zoomToActivity?: boolean;
 }
 
 export const DEFAULT_QUERY: Partial<MyQuery> = {

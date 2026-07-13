@@ -4,9 +4,10 @@
 
 Initial release.
 
-- Query types: activities, sport totals, GPS track, metric (23 health/training metrics), splits, HR zones, gear, devices, personal records, HR/power zone settings
+- Query types: activities, sport totals, GPS track, metric (23 health/training metrics), splits, power meter samples, HR zones, power zones, gear, devices, personal records, HR/power zone settings
 - Activity template-variable support for per-activity dashboards
-- Five bundled dashboards: Athlete Overview, Activity, Health, Fitness, Athlete Comparison
+- Six bundled dashboards: Athlete Overview, Activity, Cycling, Health, Fitness, Athlete Comparison
+- Linked crosshair across the per-activity charts; selecting an activity automatically fits the dashboard time range to it
 - Activity start/end coordinates for map panels ("activities on map")
 - Configurable units: speed (km/h, mph, m/s) and measurement system (metric or imperial)
 - Reactive MFA flow (code verified against the pending login via a resource endpoint)

@@ -1,4 +1,4 @@
-import { CustomVariableSupport, DataQueryRequest, DataQueryResponse, MetricFindValue } from '@grafana/data';
+import { CustomVariableSupport, DataQueryRequest, DataQueryResponse, MetricFindValue, dateTime } from '@grafana/data';
 import { Observable, map } from 'rxjs';
 
 import { VariableQueryEditor } from './components/VariableQueryEditor';
@@ -6,8 +6,11 @@ import { DataSource } from './datasource';
 import { MyQuery } from './types';
 
 /**
- * Lists activities in the dashboard time range as variable options
- * (text: "name (date)", value: activity id), for use with track/splits/hr_zones queries.
+ * Lists activities of the last year as variable options (text: "name (date)",
+ * value: activity id), for use with track/splits/hr_zones queries. The list is
+ * deliberately independent of the dashboard time range: per-activity
+ * dashboards zoom to the selected activity's window, which would otherwise
+ * shrink the picker to that single activity.
  */
 export class GarminVariableSupport extends CustomVariableSupport<DataSource, MyQuery> {
   editor = VariableQueryEditor;
@@ -18,7 +21,10 @@ export class GarminVariableSupport extends CustomVariableSupport<DataSource, MyQ
 
   query(request: DataQueryRequest<MyQuery>): Observable<DataQueryResponse> {
     const target: MyQuery = { ...request.targets[0], queryType: 'activities', refId: 'variable' };
-    return this.datasource.query({ ...request, targets: [target] }).pipe(
+    const to = dateTime();
+    const from = dateTime(to.valueOf() - 365 * 24 * 3600 * 1000);
+    const range = { from, to, raw: { from: 'now-1y', to: 'now' } };
+    return this.datasource.query({ ...request, range, targets: [target] }).pipe(
       map((response) => {
         const frame = response.data?.[0];
         const values: MetricFindValue[] = [];
