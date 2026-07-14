@@ -189,7 +189,8 @@
       "options": {
         "view": {
           "id": "fit",
-          "allLayers": true,
+          "allLayers": false,
+          "layer": "Fit",
           "zoom": 15,
           "lat": 0,
           "lon": 0
@@ -223,6 +224,28 @@
               }
             },
             "tooltip": true
+          },
+          {
+            "type": "markers",
+            "name": "Fit",
+            "location": {
+              "mode": "coords",
+              "latitude": "lat",
+              "longitude": "lon"
+            },
+            "config": {
+              "style": {
+                "size": {
+                  "fixed": 1
+                },
+                "color": {
+                  "fixed": "transparent"
+                },
+                "opacity": 0
+              },
+              "showLegend": false
+            },
+            "tooltip": false
           }
         ]
       },
