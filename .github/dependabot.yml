@@ -13,6 +13,10 @@ updates:
     commit-message:
       prefix: "chore"
       include: "scope"
+    ignore:
+      # eslint 10 is blocked until eslint-plugin-react declares support for it
+      - dependency-name: "eslint"
+        update-types: ["version-update:semver-major"]
     groups:
       unit-test:
         patterns:

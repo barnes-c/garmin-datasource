@@ -211,6 +211,9 @@ jobs:
 
       - name: Start Grafana
         run: |
+          # Provisioning resolves $__file{/tokens/garmin_token.json}; Grafana
+          # refuses to start if the file is missing, so create an empty one.
+          mkdir -p .tokens && touch .tokens/garmin_token.json
           docker compose pull
           ANONYMOUS_AUTH_ENABLED=false DEVELOPMENT=false GRAFANA_VERSION=${{ matrix.GRAFANA_IMAGE.VERSION }} GRAFANA_IMAGE=${{ matrix.GRAFANA_IMAGE.NAME }} docker compose up -d
 
@@ -229,7 +232,8 @@ jobs:
       - name: Docker logs
         if: ${{ always() && steps.run-tests.outcome == 'failure' }}
         run: |
-          docker logs barnescdev-garminconnect-datasource >& grafana-server.log
+          # Container name comes from .config/docker-compose-base.yaml (generated, still uses the old plugin id)
+          docker logs barnesc-garminconnect-datasource >& grafana-server.log
 
       - name: Stop grafana docker
         run: docker compose down
