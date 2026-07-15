@@ -384,14 +384,17 @@
         "defaults": {
           "custom": {
             "spanNulls": true
-          }
+          },
+          "noValue": "No running tolerance data"
         },
         "overrides": []
-      }
+      },
+      "description": "Requires a Garmin watch that supports running tolerance."
     },
     {
-      "type": "timeseries",
-      "title": "Lactate threshold",
+      "type": "stat",
+      "title": "Lactate threshold (latest)",
+      "description": "Garmin exposes only the latest lactate threshold estimate per sport, not a history.",
       "gridPos": {
         "h": 8,
         "w": 12,
@@ -409,11 +412,20 @@
           "metric": "lactate_threshold"
         }
       ],
+      "options": {
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "colorMode": "value",
+        "graphMode": "none"
+      },
       "fieldConfig": {
         "defaults": {
-          "custom": {
-            "spanNulls": true
-          }
+          "noValue": "No estimate"
         },
         "overrides": [
           {
@@ -423,8 +435,32 @@
             },
             "properties": [
               {
-                "id": "custom.axisPlacement",
-                "value": "right"
+                "id": "displayName",
+                "value": "Threshold speed"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "hr_running"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "HR (run)"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "hr_cycling"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "HR (cycling)"
               }
             ]
           }

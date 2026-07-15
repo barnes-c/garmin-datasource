@@ -308,12 +308,13 @@ func TestQuerySportTotals(t *testing.T) {
 }
 
 func TestLactateThresholdSortedAscending(t *testing.T) {
-	// The endpoint returns a list with no order guarantee; frame must be
+	// The endpoint returns a list with no order guarantee and mixed
+	// calendarDate formats (plain date or datetime); the frame must be
 	// ascending so lastNotNull reductions pick the newest measurement.
 	f := newFixtureServer(t, map[string]string{
 		"/biometric-service/biometric/latestLactateThreshold": `[
-			{"calendarDate": "2026-07-01", "speed": 3.2, "hearRate": 177},
-			{"calendarDate": "2026-05-01", "speed": 3.0, "hearRate": 171}
+			{"calendarDate": "2026-07-14T08:40:04.493", "speed": 0.35277679, "hearRate": 177},
+			{"calendarDate": "2026-05-01", "speed": 0.3, "hearRate": 171}
 		]`,
 	})
 	d := newTestDatasource(f, models.PluginSettings{})
@@ -322,9 +323,23 @@ func TestLactateThresholdSortedAscending(t *testing.T) {
 	if resp.Error != nil {
 		t.Fatal(resp.Error)
 	}
-	hr := fieldByName(t, resp.Frames[0], "hr_running")
+	frame := resp.Frames[0]
+	hr := fieldByName(t, frame, "hr_running")
 	if got := hr.At(1).(*float64); got == nil || *got != 177 {
 		t.Errorf("expected newest measurement (177) last, got %v", got)
+	}
+
+	// Datetime calendarDate parses to its own timestamp instead of collapsing
+	// onto the range end.
+	ts := fieldByName(t, frame, "time")
+	if got := ts.At(1).(time.Time); got.Format("2006-01-02") != "2026-07-14" {
+		t.Errorf("expected parsed datetime 2026-07-14, got %v", got)
+	}
+
+	// Speed arrives in tens of m/s: 0.35277679 → 3.5277679 m/s → km/h.
+	sp := fieldByName(t, frame, "speed")
+	if got := sp.At(1).(*float64); got == nil || math.Abs(*got-3.5277679*3.6) > 0.01 {
+		t.Errorf("expected scaled km/h speed, got %v", got)
 	}
 }
 
