@@ -169,6 +169,71 @@ func TestQueryTrack(t *testing.T) {
 	}
 }
 
+func TestQueryPower(t *testing.T) {
+	f := newFixtureServer(t, map[string]string{
+		"/activity-service/activity/42/details": activityDetailsFixture,
+	})
+	d := newTestDatasource(f, models.PluginSettings{})
+
+	resp := d.queryPower(context.Background(), queryModel{ActivityID: "42"})
+	if resp.Error != nil {
+		t.Fatal(resp.Error)
+	}
+	frame := resp.Frames[0]
+	// The sample without a timestamp is dropped.
+	if frame.Rows() != 3 {
+		t.Fatalf("expected 3 samples, got %d", frame.Rows())
+	}
+
+	if got := fieldByName(t, frame, "time").At(0).(time.Time); got != time.UnixMilli(1782799200000).UTC() {
+		t.Errorf("unexpected first timestamp: %v", got)
+	}
+	power := fieldByName(t, frame, "power")
+	if got := power.At(0).(*float64); got == nil || *got != 210 {
+		t.Errorf("expected 210 W, got %v", got)
+	}
+	if got := power.At(1).(*float64); got != nil {
+		t.Errorf("expected nil power for dropout sample, got %v", *got)
+	}
+	if power.Config.Unit != "watt" {
+		t.Errorf("expected watt unit, got %q", power.Config.Unit)
+	}
+
+	// Cached on repeat.
+	d.queryPower(context.Background(), queryModel{ActivityID: "42"})
+	if got := f.count("/activity-service/activity/42/details"); got != 1 {
+		t.Errorf("expected 1 details fetch, got %d", got)
+	}
+}
+
+func TestQueryPowerZones(t *testing.T) {
+	f := newFixtureServer(t, map[string]string{
+		"/activity-service/activity/1/powerTimeInZones": powerZonesFixture,
+	})
+	d := newTestDatasource(f, models.PluginSettings{})
+
+	resp := d.queryTable(context.Background(), queryTypePowerZones, queryModel{ActivityID: "1"})
+	if resp.Error != nil {
+		t.Fatal(resp.Error)
+	}
+	frame := resp.Frames[0]
+	if frame.Rows() != 3 {
+		t.Fatalf("expected 3 zones, got %d", frame.Rows())
+	}
+	if got := fieldByName(t, frame, "time_in_zone").At(0).(float64); got != 600.5 {
+		t.Errorf("expected 600.5s in zone 1, got %v", got)
+	}
+
+	// Upper bounds come from the next zone's lower bound; the last zone is open.
+	high := fieldByName(t, frame, "high")
+	if got := high.At(0).(*int64); got == nil || *got != 150 {
+		t.Errorf("expected 150 W upper bound for zone 1, got %v", got)
+	}
+	if got := high.At(2).(*int64); got != nil {
+		t.Errorf("expected open-ended last zone, got %v", *got)
+	}
+}
+
 func TestQuerySplitsLapFallback(t *testing.T) {
 	f := newFixtureServer(t, map[string]string{
 		"/activity-service/activity/1/splits": splitsWithLapsFixture,

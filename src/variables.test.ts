@@ -28,6 +28,26 @@ describe('GarminVariableSupport', () => {
     ]);
   });
 
+  it('queries the last year regardless of the dashboard time range', async () => {
+    let seen: DataQueryRequest<MyQuery> | undefined;
+    const datasource = {
+      query: (request: DataQueryRequest<MyQuery>) => {
+        seen = request;
+        return of({ data: [] } as DataQueryResponse);
+      },
+    } as unknown as DataSource;
+    const support = new GarminVariableSupport(datasource);
+    const request = {
+      targets: [{ refId: 'variable' } as MyQuery],
+      range: { raw: { from: 'now-6h', to: 'now' } },
+    } as DataQueryRequest<MyQuery>;
+
+    await firstValueFrom(support.query(request));
+    expect(seen?.range.raw).toEqual({ from: 'now-1y', to: 'now' });
+    const days = (seen!.range.to.valueOf() - seen!.range.from.valueOf()) / 86400000;
+    expect(days).toBe(365);
+  });
+
   it('returns no options when the query fails to produce a frame', async () => {
     const datasource = { query: () => of({ data: [] } as DataQueryResponse) } as unknown as DataSource;
     const support = new GarminVariableSupport(datasource);

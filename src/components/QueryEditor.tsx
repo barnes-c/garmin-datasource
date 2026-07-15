@@ -1,5 +1,5 @@
 import React, { ChangeEvent } from 'react';
-import { Combobox, ComboboxOption, InlineField, Input, Stack } from '@grafana/ui';
+import { Combobox, ComboboxOption, InlineField, InlineSwitch, Input, Stack } from '@grafana/ui';
 import { QueryEditorProps } from '@grafana/data';
 import { DataSource } from '../datasource';
 import { MyDataSourceOptions, MyQuery, QueryType } from '../types';
@@ -12,7 +12,9 @@ const queryTypes: Array<ComboboxOption<QueryType>> = [
   { label: 'Track', value: 'track', description: 'GPS trackpoints of one activity, for the Geomap route layer' },
   { label: 'Metric', value: 'metric', description: 'Health/training metric over the dashboard time range' },
   { label: 'Splits', value: 'splits', description: 'Per-split stats of one activity' },
+  { label: 'Power', value: 'power', description: 'Power meter samples of one activity (W)' },
   { label: 'HR zones', value: 'hr_zones', description: 'Time in heart rate zones of one activity' },
+  { label: 'Power zones', value: 'power_zones', description: 'Time in power zones of one activity' },
   { label: 'Gear', value: 'gear', description: 'Registered gear with lifetime usage' },
   { label: 'Devices', value: 'devices', description: 'Registered Garmin devices' },
   { label: 'Personal records', value: 'personal_records', description: 'Personal records table' },
@@ -21,7 +23,7 @@ const queryTypes: Array<ComboboxOption<QueryType>> = [
 ];
 
 const needsActivityId = (queryType?: string) =>
-  queryType === 'track' || queryType === 'splits' || queryType === 'hr_zones';
+  queryType === 'track' || queryType === 'splits' || queryType === 'power' || queryType === 'hr_zones' || queryType === 'power_zones';
 
 const metrics: Array<ComboboxOption<string>> = [
   { label: 'Body Battery', value: 'body_battery', description: 'Intraday Body Battery level' },
@@ -72,7 +74,12 @@ export function QueryEditor({ query, onChange, onRunQuery }: Props) {
     onChange({ ...query, activityType: event.target.value });
   };
 
-  const { queryType, activityId, activityType, limit, metric } = query;
+  const onZoomChange = (event: ChangeEvent<HTMLInputElement>) => {
+    onChange({ ...query, zoomToActivity: event.target.checked || undefined });
+    onRunQuery();
+  };
+
+  const { queryType, activityId, activityType, limit, metric, zoomToActivity } = query;
 
   return (
     <Stack gap={0}>
@@ -105,6 +112,15 @@ export function QueryEditor({ query, onChange, onRunQuery }: Props) {
             placeholder="12345678901 or $activity"
             width={30}
           />
+        </InlineField>
+      )}
+      {(queryType === 'track' || queryType === 'power') && (
+        <InlineField
+          label="Fit time range"
+          labelWidth={14}
+          tooltip="When the activity changes, set the dashboard time range to its recording window"
+        >
+          <InlineSwitch id="query-editor-zoom" value={!!zoomToActivity} onChange={onZoomChange} />
         </InlineField>
       )}
       {(queryType === 'activities' || queryType === 'sport_totals') && (

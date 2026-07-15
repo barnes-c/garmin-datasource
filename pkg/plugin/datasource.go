@@ -41,7 +41,9 @@ const (
 	queryTypeDevices         = "devices"
 	queryTypePersonalRecords = "personal_records"
 	queryTypeSplits          = "splits"
+	queryTypePower           = "power"
 	queryTypeHRZones         = "hr_zones"
+	queryTypePowerZones      = "power_zones"
 	queryTypeHRZoneConfig    = "hr_zone_config"
 	queryTypePowerZoneConfig = "power_zone_config"
 
@@ -522,6 +524,8 @@ func (d *Datasource) query(ctx context.Context, query backend.DataQuery) backend
 	switch query.QueryType {
 	case queryTypeTrack:
 		return d.queryTrack(ctx, qm)
+	case queryTypePower:
+		return d.queryPower(ctx, qm)
 	case queryTypeMetric:
 		return d.queryMetric(ctx, qm, query.TimeRange)
 	case queryTypeActivities, "":
@@ -529,7 +533,7 @@ func (d *Datasource) query(ctx context.Context, query backend.DataQuery) backend
 	case queryTypeSportTotals:
 		return d.querySportTotals(ctx, qm, query.TimeRange)
 	case queryTypeGear, queryTypeDevices, queryTypePersonalRecords, queryTypeSplits, queryTypeHRZones,
-		queryTypeHRZoneConfig, queryTypePowerZoneConfig:
+		queryTypePowerZones, queryTypeHRZoneConfig, queryTypePowerZoneConfig:
 		return d.queryTable(ctx, query.QueryType, qm)
 	default:
 		return backend.ErrDataResponse(backend.StatusBadRequest, fmt.Sprintf("unknown query type %q", query.QueryType))
@@ -568,7 +572,7 @@ func (d *Datasource) fetchTable(ctx context.Context, key, queryType string, qm q
 		response = d.queryHRZoneConfig(fetchCtx, client)
 	case queryTypePowerZoneConfig:
 		response = d.queryPowerZoneConfig(fetchCtx, client)
-	case queryTypeSplits, queryTypeHRZones:
+	case queryTypeSplits, queryTypeHRZones, queryTypePowerZones:
 		if qm.ActivityID == "" {
 			return backend.ErrDataResponse(backend.StatusBadRequest, fmt.Sprintf("activity id is required for %s queries", queryType))
 		}
@@ -576,18 +580,21 @@ func (d *Datasource) fetchTable(ctx context.Context, key, queryType string, qm q
 		if err != nil {
 			return backend.ErrDataResponse(backend.StatusBadRequest, fmt.Sprintf("invalid activity id %q", qm.ActivityID))
 		}
-		if queryType == queryTypeSplits {
+		switch queryType {
+		case queryTypeSplits:
 			response = d.querySplits(fetchCtx, client, id)
-		} else {
+		case queryTypeHRZones:
 			response = d.queryHRZones(fetchCtx, client, id)
+		case queryTypePowerZones:
+			response = d.queryPowerZones(fetchCtx, client, id)
 		}
 	}
 
 	if response.Error == nil && len(response.Frames) == 1 {
-		// splits and hr_zones are immutable per activity; gear, devices and
-		// personal records change as new activities sync in.
+		// splits and zone breakdowns are immutable per activity; gear, devices
+		// and personal records change as new activities sync in.
 		ttl := frameCacheTTLCurrent
-		if queryType == queryTypeSplits || queryType == queryTypeHRZones {
+		if queryType == queryTypeSplits || queryType == queryTypeHRZones || queryType == queryTypePowerZones {
 			ttl = frameCacheTTLHistorical
 		}
 		d.cachePut(key, response.Frames[0], ttl)
@@ -903,6 +910,54 @@ func (d *Datasource) fetchTrack(ctx context.Context, key string, id int64) backe
 		data.NewField("distance", nil, distances),
 	)
 	setFieldUnits(frame, map[int]string{3: d.elevationUnitID(), 5: d.speedUnitID(), 6: d.distanceUnitID()})
+
+	d.cachePut(key, frame, frameCacheTTLHistorical)
+	return frameResponse(frame)
+}
+
+func (d *Datasource) queryPower(ctx context.Context, qm queryModel) backend.DataResponse {
+	if qm.ActivityID == "" {
+		return backend.ErrDataResponse(backend.StatusBadRequest, "activity id is required for power queries")
+	}
+	id, err := strconv.ParseInt(qm.ActivityID, 10, 64)
+	if err != nil {
+		return backend.ErrDataResponse(backend.StatusBadRequest, fmt.Sprintf("invalid activity id %q", qm.ActivityID))
+	}
+
+	key := "power|" + qm.ActivityID
+	if frame, ok := d.cacheGet(key); ok {
+		return frameResponse(frame)
+	}
+	return d.coalesce(key, func() backend.DataResponse {
+		return d.fetchPower(ctx, key, id)
+	})
+}
+
+// fetchPower reads the power meter samples from the activity details
+// endpoint; the GPX track carries no power data. Activities without a power
+// meter yield an empty frame.
+func (d *Datasource) fetchPower(ctx context.Context, key string, id int64) backend.DataResponse {
+	client, err := d.garminClient(ctx)
+	if err != nil {
+		return backend.ErrDataResponse(backend.StatusInternal, err.Error())
+	}
+	spanCtx, span := startSpan(ctx, "garmin.activity_details", attribute.Int64("activity_id", id))
+	details, err := client.ActivityDetails(spanCtx, id)
+	endSpan(span, err)
+	if err != nil {
+		return errDownstream("fetch details for activity %d: %v", id, err)
+	}
+	times, watts, err := detailSeries(details, "directPower")
+	if err != nil {
+		return backend.ErrDataResponse(backend.StatusInternal, err.Error())
+	}
+	log.DefaultLogger.FromContext(ctx).Debug("Fetched activity power", "activityID", id, "samples", len(times))
+
+	frame := data.NewFrame("power",
+		data.NewField("time", nil, times),
+		data.NewField("power", nil, watts),
+	)
+	frame.Fields[1].Config = &data.FieldConfig{Unit: "watt"}
 
 	d.cachePut(key, frame, frameCacheTTLHistorical)
 	return frameResponse(frame)

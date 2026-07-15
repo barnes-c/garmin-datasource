@@ -72,7 +72,7 @@
     },
     {
       "type": "stat",
-      "title": "Max speed",
+      "title": "Avg power",
       "gridPos": {
         "h": 4,
         "w": 4,
@@ -86,7 +86,45 @@
       "targets": [
         {
           "refId": "A",
-          "queryType": "track",
+          "queryType": "power",
+          "activityId": "$activity"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "mean"
+          ],
+          "fields": "/^power$/"
+        },
+        "colorMode": "value",
+        "graphMode": "none"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "No power meter"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Max power",
+      "gridPos": {
+        "h": 4,
+        "w": 5,
+        "x": 14,
+        "y": 0
+      },
+      "datasource": {
+        "type": "barnesc-garminconnect-datasource",
+        "uid": "${datasource}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "queryType": "power",
           "activityId": "$activity"
         }
       ],
@@ -96,10 +134,16 @@
           "calcs": [
             "max"
           ],
-          "fields": "/^speed$/"
+          "fields": "/^power$/"
         },
         "colorMode": "value",
         "graphMode": "none"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "No power meter"
+        },
+        "overrides": []
       }
     },
     {
@@ -108,7 +152,7 @@
       "gridPos": {
         "h": 4,
         "w": 5,
-        "x": 14,
+        "x": 19,
         "y": 0
       },
       "datasource": {
@@ -135,42 +179,10 @@
       }
     },
     {
-      "type": "stat",
-      "title": "Max HR",
-      "gridPos": {
-        "h": 4,
-        "w": 5,
-        "x": 19,
-        "y": 0
-      },
-      "datasource": {
-        "type": "barnesc-garminconnect-datasource",
-        "uid": "${datasource}"
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "queryType": "track",
-          "activityId": "$activity"
-        }
-      ],
-      "options": {
-        "reduceOptions": {
-          "values": false,
-          "calcs": [
-            "max"
-          ],
-          "fields": "/^heartrate$/"
-        },
-        "colorMode": "value",
-        "graphMode": "none"
-      }
-    },
-    {
       "type": "geomap",
       "title": "Route",
       "gridPos": {
-        "h": 14,
+        "h": 21,
         "w": 12,
         "x": 12,
         "y": 4
@@ -256,13 +268,62 @@
     },
     {
       "type": "timeseries",
-      "title": "Heart rate / Speed",
-      "description": "Hovering here moves the crosshair in all other charts. Selecting an activity automatically fits the dashboard time range to it.",
+      "title": "Power",
+      "description": "Power meter samples. Hovering here moves the crosshair in all other charts.",
       "gridPos": {
         "h": 7,
         "w": 12,
         "x": 0,
         "y": 4
+      },
+      "datasource": {
+        "type": "barnesc-garminconnect-datasource",
+        "uid": "${datasource}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "queryType": "power",
+          "activityId": "$activity",
+          "zoomToActivity": true
+        }
+      ],
+      "options": {
+        "legend": {
+          "showLegend": true,
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "spanNulls": true
+          },
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "purple"
+          },
+          "noValue": "No power meter data for this activity"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Heart rate / Speed",
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 0,
+        "y": 11
       },
       "datasource": {
         "type": "barnesc-garminconnect-datasource",
@@ -320,17 +381,17 @@
             ]
           }
         ]
-      }
+      },
+      "description": "Hovering here moves the crosshair in all other charts. Selecting an activity automatically fits the dashboard time range to it."
     },
     {
       "type": "timeseries",
-      "title": "Elevation / Power",
-      "description": "Power appears when the activity was recorded with a power meter.",
+      "title": "Elevation",
       "gridPos": {
         "h": 7,
         "w": 12,
         "x": 0,
-        "y": 11
+        "y": 18
       },
       "datasource": {
         "type": "barnesc-garminconnect-datasource",
@@ -341,12 +402,16 @@
           "refId": "A",
           "queryType": "track",
           "activityId": "$activity"
-        },
+        }
+      ],
+      "transformations": [
         {
-          "refId": "B",
-          "queryType": "power",
-          "activityId": "$activity",
-          "zoomToActivity": true
+          "id": "filterFieldsByName",
+          "options": {
+            "include": {
+              "pattern": "^(time|elevation)$"
+            }
+          }
         }
       ],
       "options": {
@@ -369,58 +434,100 @@
             "spanNulls": true
           }
         },
+        "overrides": []
+      }
+    },
+    {
+      "type": "barchart",
+      "title": "Time in power zones",
+      "gridPos": {
+        "h": 9,
+        "w": 8,
+        "x": 0,
+        "y": 24
+      },
+      "datasource": {
+        "type": "barnesc-garminconnect-datasource",
+        "uid": "${datasource}"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "queryType": "power_zones",
+          "activityId": "$activity"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "filterFieldsByName",
+          "options": {
+            "include": {
+              "pattern": "^(zone|time_in_zone)$"
+            }
+          }
+        }
+      ],
+      "options": {
+        "xField": "zone",
+        "colorByField": "zone",
+        "legend": {
+          "showLegend": false
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 80
+          },
+          "noValue": "No power meter data for this activity"
+        },
         "overrides": [
           {
             "matcher": {
-              "id": "byRegexp",
-              "options": "^(track )?(time|lat|lon|heartrate|speed|distance)$"
+              "id": "byName",
+              "options": "zone"
             },
             "properties": [
-              {
-                "id": "custom.hideFrom",
-                "value": {
-                  "viz": true,
-                  "legend": true,
-                  "tooltip": true
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byRegexp",
-              "options": "^(track )?elevation$"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "elevation"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byRegexp",
-              "options": "^(power )?power$"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "power"
-              },
-              {
-                "id": "custom.axisPlacement",
-                "value": "right"
-              },
-              {
-                "id": "custom.fillOpacity",
-                "value": 0
-              },
               {
                 "id": "color",
                 "value": {
-                  "mode": "fixed",
-                  "fixedColor": "purple"
+                  "mode": "thresholds"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "text",
+                      "value": null
+                    },
+                    {
+                      "color": "blue",
+                      "value": 2
+                    },
+                    {
+                      "color": "green",
+                      "value": 3
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 4
+                    },
+                    {
+                      "color": "orange",
+                      "value": 5
+                    },
+                    {
+                      "color": "red",
+                      "value": 6
+                    },
+                    {
+                      "color": "dark-red",
+                      "value": 7
+                    }
+                  ]
                 }
               }
             ]
@@ -430,56 +537,12 @@
     },
     {
       "type": "barchart",
-      "title": "Splits — avg speed",
-      "gridPos": {
-        "h": 9,
-        "w": 8,
-        "x": 0,
-        "y": 18
-      },
-      "datasource": {
-        "type": "barnesc-garminconnect-datasource",
-        "uid": "${datasource}"
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "queryType": "splits",
-          "activityId": "$activity"
-        }
-      ],
-      "transformations": [
-        {
-          "id": "filterFieldsByName",
-          "options": {
-            "include": {
-              "pattern": "^(split|average_speed)$"
-            }
-          }
-        }
-      ],
-      "options": {
-        "xField": "split"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "custom": {
-            "fillOpacity": 80
-          },
-          "noValue": "No laps in this activity"
-        },
-        "overrides": []
-      },
-      "description": "Garmin only records splits when the device creates laps (auto-lap or manual lap button)."
-    },
-    {
-      "type": "barchart",
       "title": "Time in HR zones",
       "gridPos": {
         "h": 9,
         "w": 8,
         "x": 8,
-        "y": 18
+        "y": 24
       },
       "datasource": {
         "type": "barnesc-garminconnect-datasource",
@@ -563,12 +626,12 @@
     },
     {
       "type": "histogram",
-      "title": "Heart rate distribution",
+      "title": "Power distribution",
       "gridPos": {
         "h": 9,
         "w": 8,
         "x": 16,
-        "y": 18
+        "y": 24
       },
       "datasource": {
         "type": "barnesc-garminconnect-datasource",
@@ -577,7 +640,7 @@
       "targets": [
         {
           "refId": "A",
-          "queryType": "track",
+          "queryType": "power",
           "activityId": "$activity"
         }
       ],
@@ -586,7 +649,7 @@
           "id": "filterFieldsByName",
           "options": {
             "include": {
-              "pattern": "^heartrate$"
+              "pattern": "^power$"
             }
           }
         }
@@ -595,7 +658,12 @@
         "defaults": {
           "custom": {
             "fillOpacity": 80
-          }
+          },
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "purple"
+          },
+          "noValue": "No power meter data for this activity"
         },
         "overrides": []
       }
@@ -607,7 +675,7 @@
         "h": 9,
         "w": 24,
         "x": 0,
-        "y": 27
+        "y": 33
       },
       "datasource": {
         "type": "barnesc-garminconnect-datasource",
@@ -655,7 +723,7 @@
           "type": "barnesc-garminconnect-datasource",
           "uid": "${datasource}"
         },
-        "definition": "activities",
+        "definition": "activities (cycling)",
         "hide": 0,
         "includeAll": false,
         "multi": false,
@@ -663,7 +731,7 @@
         "options": [],
         "query": {
           "refId": "variable",
-          "activityType": "",
+          "activityType": "cycling",
           "limit": 100
         },
         "refresh": 2,
@@ -680,8 +748,8 @@
   },
   "timepicker": {},
   "timezone": "",
-  "title": "Garmin Activity",
-  "uid": "garmin-activity",
+  "title": "Garmin Cycling",
+  "uid": "garmin-cycling",
   "version": 1,
   "weekStart": ""
 }
