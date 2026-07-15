@@ -10,9 +10,11 @@ datasources:
     editable: true
     jsonData:
       email: '${GARMIN_EMAIL}'
-      tokenFile: '/tokens/garmin_token.json'
     secureJsonData:
       password: '${GARMIN_PASSWORD}'
+      # Grafana reads the file at provisioning time ($__file interpolation);
+      # the plugin itself never touches the filesystem.
+      token: '$__file{/tokens/garmin_token.json}'
 
   - name: tempo
     uid: tempo

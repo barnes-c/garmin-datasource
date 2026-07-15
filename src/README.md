@@ -20,8 +20,8 @@ Visualize your Garmin Connect activities, GPS tracks, and health metrics in Graf
 
 1. Install the plugin and add a **Garmin Connect** data source.
 2. Enter your Garmin Connect **email** and **password** (stored encrypted by Grafana).
-3. Recommended: set a **token file** path (e.g. `/var/lib/grafana/garmin_token.json`). The OAuth token is then reused across Grafana restarts, so you won't need to log in (or redo MFA) again. Without it, tokens are kept in memory only.
-4. Click **Save & test**.
+3. Click **Save & test**.
+4. Recommended: click **Load from session** next to the *Session token* field, then **Save & test** again. The OAuth token is then stored (encrypted) with the datasource and reused across Grafana restarts, so you won't need to log in (or redo MFA) again. Without it, tokens are kept in memory only.
 
 ### Provisioning
 
@@ -33,34 +33,36 @@ datasources:
     access: proxy
     jsonData:
       email: $GARMIN_EMAIL
-      tokenFile: /var/lib/grafana/garmin_token.json
-      speedUnit: kmh # kmh | mph | ms
-      unitSystem: metric # metric | imperial
+      | speedUnit: kmh # kmh        | mph      | ms |
+      | unitSystem: metric # metric | imperial |    |
     secureJsonData:
       password: $GARMIN_PASSWORD
+      # optional: resume a saved session (e.g. a token file exported from
+      # garmin_exporter); Grafana reads the file, the plugin never does
+      token: $__file{/var/lib/grafana/garmin_token.json}
 ```
 
 ### Accounts with MFA
 
-If your account has multi-factor authentication, **Save & test** will report that Garmin sent a code to your email. Enter the code in the **MFA code** field and click **Verify** — the pending login completes without a new code being triggered. With a token file configured this is a one-time step.
+If your account has multi-factor authentication, **Save & test** will report that Garmin sent a code to your email. Enter the code in the **MFA code** field and click **Verify** — the pending login completes without a new code being triggered. Then click **Load from session** and **Save & test** once more to store the session token, making MFA a one-time step.
 
-For **fully headless setups** (provisioned Grafana, nobody to click Verify), note that an MFA code cannot be known in advance — Garmin only emails it in response to a login attempt, so a code cannot be provisioned. Instead, **provision the token**: complete the MFA login once anywhere (this plugin's UI, or [garmin_exporter](https://github.com/barnes-c/garmin_exporter) — the token file format is shared), copy the resulting token file to the server, and set `tokenFile`. The login resumes the token and MFA never happens on the headless host.
+For **fully headless setups** (provisioned Grafana, nobody to click Verify), note that an MFA code cannot be known in advance — Garmin only emails it in response to a login attempt, so a code cannot be provisioned. Instead, **provision the token**: complete the MFA login once anywhere (this plugin's UI via *Load from session*, or [garmin_exporter](https://github.com/barnes-c/garmin_exporter) — the token format is shared), and provision it as the `token` secret — either inline or with Grafana's `$__file{}` interpolation as shown above. The login resumes the session and MFA never happens on the headless host.
 
 ## Query types
 
-| Query type | Returns |
-|---|---|
-| Activities | Table of activities in the dashboard time range (distance, duration, elevation, calories, HR, speed) |
-| Sport totals | Distance, time and activity count per sport in the dashboard time range |
-| Track | GPS trackpoints of one activity: time, lat, lon, elevation, heart rate, speed, cumulative distance |
-| Metric | One health/training metric over the dashboard time range |
-| Splits | Lap splits of one activity |
-| Power | Power meter samples of one activity as a time series (W) |
-| HR zones | Time in heart rate zones of one activity |
-| Power zones | Time in power zones of one activity |
-| Gear | Registered gear with lifetime distance and activity count |
-| Devices | Registered Garmin devices with firmware and registration date |
-| Personal records | All personal records, formatted per record type |
+|    Query type    |                                               Returns                                                |
+| ---------------- | ---------------------------------------------------------------------------------------------------- |
+| Activities       | Table of activities in the dashboard time range (distance, duration, elevation, calories, HR, speed) |
+| Sport totals     | Distance, time and activity count per sport in the dashboard time range                              |
+| Track            | GPS trackpoints of one activity: time, lat, lon, elevation, heart rate, speed, cumulative distance   |
+| Metric           | One health/training metric over the dashboard time range                                             |
+| Splits           | Lap splits of one activity                                                                           |
+| Power            | Power meter samples of one activity as a time series (W)                                             |
+| HR zones         | Time in heart rate zones of one activity                                                             |
+| Power zones      | Time in power zones of one activity                                                                  |
+| Gear             | Registered gear with lifetime distance and activity count                                            |
+| Devices          | Registered Garmin devices with firmware and registration date                                        |
+| Personal records | All personal records, formatted per record type                                                      |
 
 `Track`, `Splits`, `Power`, `HR zones`, and `Power zones` take an activity id and support dashboard variables (e.g. `$activity`). To create an activity picker, add a *query* variable — the editor lets you filter by activity type and limit the list; it offers the activities of the last year, independent of the dashboard time range. `Track` and `Power` queries have a **Fit time range** option: when the selected activity changes, the dashboard time range automatically snaps to the activity's recording window.
 
@@ -77,9 +79,9 @@ Open the data source's configuration page → **Dashboards** tab → import:
 
 ## Multiple athletes
 
-Add one Garmin Connect data source per athlete, each with its own credentials — instances are fully isolated (separate logins, caches, and token files). The bundled dashboards have a **Datasource** dropdown, so switching athlete is one click. The bundled **Garmin Athlete Comparison** dashboard puts two athletes head-to-head; for custom panels, use Grafana's built-in *Mixed* data source with one query per athlete.
+Add one Garmin Connect data source per athlete, each with its own credentials — instances are fully isolated (separate logins, caches, and session tokens). The bundled dashboards have a **Datasource** dropdown, so switching athlete is one click. The bundled **Garmin Athlete Comparison** dashboard puts two athletes head-to-head; for custom panels, use Grafana's built-in *Mixed* data source with one query per athlete.
 
-If you use token files, give each athlete's data source **its own file path** — sharing a path would make one athlete resume the other's session.
+Each athlete's data source stores **its own session token**, so the accounts never share a session.
 
 ## Notes & troubleshooting
 

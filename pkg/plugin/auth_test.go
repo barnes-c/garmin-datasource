@@ -13,7 +13,7 @@ import (
 	"github.com/barnesc/garminconnect/pkg/models"
 )
 
-func authTestDatasource(loginFn func(ctx context.Context, tokenFile, email, password string, prompt func() (string, error)) (*garminconnect.Client, error)) *Datasource {
+func authTestDatasource(loginFn func(ctx context.Context, tokenJSON []byte, email, password string, prompt func() (string, error)) (*garminconnect.Client, error)) *Datasource {
 	return &Datasource{
 		settings: &models.PluginSettings{
 			Email:   "athlete@example.com",
@@ -41,7 +41,7 @@ func submitMFACode(t *testing.T, d *Datasource, code string) *captureSender {
 // TestMFAFullFlow drives the state machine end to end: query → MFA pending →
 // code submitted via the resource endpoint → login completes → queries work.
 func TestMFAFullFlow(t *testing.T) {
-	d := authTestDatasource(func(_ context.Context, _, _, _ string, prompt func() (string, error)) (*garminconnect.Client, error) {
+	d := authTestDatasource(func(_ context.Context, _ []byte, _, _ string, prompt func() (string, error)) (*garminconnect.Client, error) {
 		code, err := prompt()
 		if err != nil {
 			return nil, err
@@ -84,7 +84,7 @@ func TestMFAFullFlow(t *testing.T) {
 }
 
 func TestMFAWrongCodeBacksOff(t *testing.T) {
-	d := authTestDatasource(func(_ context.Context, _, _, _ string, prompt func() (string, error)) (*garminconnect.Client, error) {
+	d := authTestDatasource(func(_ context.Context, _ []byte, _, _ string, prompt func() (string, error)) (*garminconnect.Client, error) {
 		code, _ := prompt()
 		if code != "424242" {
 			return nil, errors.New("invalid MFA code")
@@ -118,7 +118,7 @@ func TestMFAWrongCodeBacksOff(t *testing.T) {
 func TestConcurrentQueriesSharePendingLogin(t *testing.T) {
 	starts := 0
 	d := authTestDatasource(nil)
-	d.loginFn = func(_ context.Context, _, _, _ string, prompt func() (string, error)) (*garminconnect.Client, error) {
+	d.loginFn = func(_ context.Context, _ []byte, _, _ string, prompt func() (string, error)) (*garminconnect.Client, error) {
 		starts++
 		_, err := prompt()
 		return nil, err
@@ -131,5 +131,49 @@ func TestConcurrentQueriesSharePendingLogin(t *testing.T) {
 	}
 	if starts != 1 {
 		t.Fatalf("expected a single login attempt for concurrent callers, got %d", starts)
+	}
+}
+
+// TestTokenResource exports the session token for secureJsonData persistence,
+// gated on the org admin role.
+func TestTokenResource(t *testing.T) {
+	d := authTestDatasource(nil)
+	tokenJSON := `{"access_token":"a1","refresh_token":"r1","client_id":"cid","expires_at":"2099-01-01T00:00:00Z"}`
+
+	call := func(user *backend.User) *backend.CallResourceResponse {
+		t.Helper()
+		sender := &captureSender{}
+		err := d.CallResource(context.Background(), &backend.CallResourceRequest{
+			Path:          "token",
+			Method:        "GET",
+			PluginContext: backend.PluginContext{User: user},
+		}, sender)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return sender.resp
+	}
+
+	// Not logged in yet.
+	if got := call(&backend.User{Role: "Admin"}); got.Status != 409 {
+		t.Fatalf("expected 409 before login, got %d", got.Status)
+	}
+
+	d.client = garminconnect.NewClient("", garminconnect.WithTokenJSON([]byte(tokenJSON)))
+
+	// Only admins may read the credential.
+	if got := call(nil); got.Status != 403 {
+		t.Fatalf("expected 403 without user, got %d", got.Status)
+	}
+	if got := call(&backend.User{Role: "Editor"}); got.Status != 403 {
+		t.Fatalf("expected 403 for editor, got %d", got.Status)
+	}
+
+	got := call(&backend.User{Role: "Admin"})
+	if got.Status != 200 {
+		t.Fatalf("expected 200, got %d", got.Status)
+	}
+	if !strings.Contains(string(got.Body), `"access_token":"a1"`) || !strings.Contains(string(got.Body), `"refresh_token":"r1"`) {
+		t.Errorf("unexpected token body: %s", got.Body)
 	}
 }

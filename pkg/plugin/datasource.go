@@ -6,8 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"os"
-	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
@@ -92,7 +90,7 @@ type Datasource struct {
 
 	// loginFn performs the Garmin login; tests inject a fake to drive the
 	// MFA state machine without Garmin's SSO.
-	loginFn func(ctx context.Context, tokenFile, email, password string, prompt func() (string, error)) (*garminconnect.Client, error)
+	loginFn func(ctx context.Context, tokenJSON []byte, email, password string, prompt func() (string, error)) (*garminconnect.Client, error)
 
 	frameMu    sync.Mutex
 	frameCache map[string]cachedFrame
@@ -289,18 +287,11 @@ func (d *Datasource) startLoginLocked() *loginAttempt {
 
 	email := d.settings.Email
 	password := d.settings.Secrets.Password
-	tokenFile := d.settings.TokenFile
+	tokenJSON := []byte(d.settings.Secrets.Token)
 
 	go func() {
 		defer close(a.done)
 		logger := log.DefaultLogger
-
-		if tokenFile != "" {
-			if err := os.MkdirAll(filepath.Dir(tokenFile), 0o700); err != nil {
-				a.err = fmt.Errorf("create token file directory: %w", err)
-				return
-			}
-		}
 
 		prompt := func() (string, error) {
 			logger.Info("Garmin requested an MFA code, waiting for the user to submit one")
@@ -319,10 +310,10 @@ func (d *Datasource) startLoginLocked() *loginAttempt {
 			login = garminLogin
 		}
 
-		logger.Info("Starting Garmin Connect login", "tokenFileConfigured", tokenFile != "")
+		logger.Info("Starting Garmin Connect login", "tokenConfigured", len(tokenJSON) > 0)
 		start := time.Now()
 		loginCtx, span := startSpan(context.Background(), "garmin.login")
-		client, err := login(loginCtx, tokenFile, email, password, prompt)
+		client, err := login(loginCtx, tokenJSON, email, password, prompt)
 		endSpan(span, err)
 		if err != nil {
 			logger.Error("Garmin Connect login failed", "error", err)
@@ -335,8 +326,8 @@ func (d *Datasource) startLoginLocked() *loginAttempt {
 	return a
 }
 
-func garminLogin(ctx context.Context, tokenFile, email, password string, prompt func() (string, error)) (*garminconnect.Client, error) {
-	client := garminconnect.NewClient(tokenFile, garminconnect.WithMFAPrompt(prompt))
+func garminLogin(ctx context.Context, tokenJSON []byte, email, password string, prompt func() (string, error)) (*garminconnect.Client, error) {
+	client := garminconnect.NewClient("", garminconnect.WithMFAPrompt(prompt), garminconnect.WithTokenJSON(tokenJSON))
 	if err := client.Login(ctx, email, password); err != nil {
 		return nil, err
 	}
@@ -366,10 +357,10 @@ func (d *Datasource) finishLogin(a *loginAttempt) (*garminconnect.Client, error)
 	return a.client, nil
 }
 
-// garminClient returns a logged-in client. With a token file configured (same
-// convention as garmin_exporter's --token-file), the login resumes or
-// refreshes the persisted OAuth token and only falls back to a full SSO login
-// (and MFA) when neither works.
+// garminClient returns a logged-in client. With a stored token configured
+// (same JSON format as garmin_exporter's token file), the login resumes or
+// refreshes that session and only falls back to a full SSO login (and MFA)
+// when neither works.
 func (d *Datasource) garminClient(ctx context.Context) (*garminconnect.Client, error) {
 	d.mu.Lock()
 	if d.client != nil {
@@ -432,9 +423,13 @@ func (d *Datasource) CheckHealth(ctx context.Context, _ *backend.CheckHealthRequ
 	}, nil
 }
 
-// CallResource handles POST /mfa, feeding the emailed code into the login
-// attempt that is blocked waiting for it.
+// CallResource routes the config-page endpoints: POST /mfa feeds the emailed
+// code into the login attempt that is blocked waiting for it, and GET /token
+// exports the current session token for persistence in secureJsonData.
 func (d *Datasource) CallResource(ctx context.Context, req *backend.CallResourceRequest, sender backend.CallResourceResponseSender) error {
+	if req.Path == "token" && req.Method == http.MethodGet {
+		return d.handleTokenResource(sender, req)
+	}
 	if req.Path != "mfa" || req.Method != http.MethodPost {
 		return resourceJSON(sender, http.StatusNotFound, "not found")
 	}
@@ -477,6 +472,30 @@ func (d *Datasource) CallResource(ctx context.Context, req *backend.CallResource
 		return resourceJSON(sender, http.StatusUnauthorized, err.Error())
 	}
 	return resourceJSON(sender, http.StatusOK, "MFA verified — logged in to Garmin Connect")
+}
+
+// handleTokenResource returns the logged-in session's token JSON so the
+// config editor can store it in secureJsonData. Editing a datasource requires
+// admin rights, and the token is a credential, so the same is required here.
+func (d *Datasource) handleTokenResource(sender backend.CallResourceResponseSender, req *backend.CallResourceRequest) error {
+	if u := req.PluginContext.User; u == nil || u.Role != "Admin" {
+		return resourceJSON(sender, http.StatusForbidden, "admin role required")
+	}
+	d.mu.Lock()
+	client := d.client
+	d.mu.Unlock()
+	if client == nil {
+		return resourceJSON(sender, http.StatusConflict, "not logged in; click Save & test first")
+	}
+	token, err := client.TokenJSON()
+	if err != nil {
+		return resourceJSON(sender, http.StatusConflict, "no session token available")
+	}
+	return sender.Send(&backend.CallResourceResponse{
+		Status:  http.StatusOK,
+		Headers: map[string][]string{"Content-Type": {"application/json"}},
+		Body:    token,
+	})
 }
 
 // errDownstream reports a failed Garmin API call, attributed to the upstream

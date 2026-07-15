@@ -9,6 +9,6 @@ Initial release.
 - Activity start/end coordinates for map panels ("activities on map")
 - Configurable units: speed (km/h, mph, m/s) and measurement system (metric or imperial)
 - Reactive MFA flow (code verified against the pending login via a resource endpoint)
-- Optional token file to persist the Garmin OAuth token across restarts
+- Optional session token (stored encrypted in secureJsonData) to persist the Garmin OAuth login across restarts
 - Alerting support with response caching (5 min recent / 24 h historical) and request coalescing
 - OpenTelemetry spans around all Garmin API calls, named per metric

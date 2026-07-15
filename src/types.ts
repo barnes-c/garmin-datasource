@@ -36,7 +36,6 @@ export const DEFAULT_QUERY: Partial<MyQuery> = {
 
 export interface MyDataSourceOptions extends DataSourceJsonData {
   email?: string;
-  tokenFile?: string;
   speedUnit?: SpeedUnit;
   unitSystem?: UnitSystem;
 }
@@ -46,4 +45,6 @@ export interface MyDataSourceOptions extends DataSourceJsonData {
  */
 export interface MySecureJsonData {
   password?: string;
+  /** Garmin OAuth token JSON; lets logins resume a session across restarts */
+  token?: string;
 }

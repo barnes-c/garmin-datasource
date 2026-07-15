@@ -9,7 +9,6 @@ import (
 
 type PluginSettings struct {
 	Email      string                `json:"email"`
-	TokenFile  string                `json:"tokenFile"`
 	Secrets    *SecretPluginSettings `json:"-"`
 	SpeedUnit  string                `json:"speedUnit"`  // kmh (default), mph, ms
 	UnitSystem string                `json:"unitSystem"` // metric (default), imperial
@@ -17,6 +16,10 @@ type PluginSettings struct {
 
 type SecretPluginSettings struct {
 	Password string `json:"password"`
+	// Token is a Garmin OAuth token in the format produced by the /token
+	// resource endpoint (or garmin_exporter's token file). When set, logins
+	// resume this session instead of a fresh SSO round trip.
+	Token string `json:"token"`
 }
 
 func LoadPluginSettings(source backend.DataSourceInstanceSettings) (*PluginSettings, error) {
@@ -34,5 +37,6 @@ func LoadPluginSettings(source backend.DataSourceInstanceSettings) (*PluginSetti
 func loadSecretPluginSettings(source map[string]string) *SecretPluginSettings {
 	return &SecretPluginSettings{
 		Password: source["password"],
+		Token:    source["token"],
 	}
 }

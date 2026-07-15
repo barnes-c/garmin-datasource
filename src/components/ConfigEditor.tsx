@@ -24,6 +24,8 @@ export function ConfigEditor(props: Props) {
   const [mfaCode, setMfaCode] = useState('');
   const [verifying, setVerifying] = useState(false);
   const [mfaResult, setMfaResult] = useState<{ ok: boolean; text: string }>();
+  const [fetchingToken, setFetchingToken] = useState(false);
+  const [tokenResult, setTokenResult] = useState<{ ok: boolean; text: string }>();
 
   const onEmailChange = (event: ChangeEvent<HTMLInputElement>) => {
     onOptionsChange({
@@ -31,16 +33,6 @@ export function ConfigEditor(props: Props) {
       jsonData: {
         ...jsonData,
         email: event.target.value,
-      },
-    });
-  };
-
-  const onTokenFileChange = (event: ChangeEvent<HTMLInputElement>) => {
-    onOptionsChange({
-      ...options,
-      jsonData: {
-        ...jsonData,
-        tokenFile: event.target.value,
       },
     });
   };
@@ -67,6 +59,58 @@ export function ConfigEditor(props: Props) {
         password: '',
       },
     });
+  };
+
+  const onTokenChange = (event: ChangeEvent<HTMLInputElement>) => {
+    onOptionsChange({
+      ...options,
+      secureJsonData: {
+        ...secureJsonData,
+        token: event.target.value,
+      },
+    });
+  };
+
+  const onTokenReset = () => {
+    onOptionsChange({
+      ...options,
+      secureJsonFields: {
+        ...secureJsonFields,
+        token: false,
+      },
+      secureJsonData: {
+        ...secureJsonData,
+        token: '',
+      },
+    });
+  };
+
+  // Stages the backend's current session token into the (unsaved) secure
+  // settings; the backend cannot write secureJsonData itself.
+  const onFetchToken = async () => {
+    setFetchingToken(true);
+    setTokenResult(undefined);
+    try {
+      const res = await getBackendSrv().get(`/api/datasources/uid/${options.uid}/resources/token`);
+      onOptionsChange({
+        ...options,
+        secureJsonFields: {
+          ...secureJsonFields,
+          token: false,
+        },
+        secureJsonData: {
+          ...secureJsonData,
+          token: JSON.stringify(res),
+        },
+      });
+      setTokenResult({ ok: true, text: 'Session token staged — click Save & test to persist it' });
+    } catch (err) {
+      const message =
+        err && typeof err === 'object' && 'data' in err ? (err.data as { message?: string })?.message : undefined;
+      setTokenResult({ ok: false, text: message ?? 'Could not fetch the session token' });
+    } finally {
+      setFetchingToken(false);
+    }
   };
 
   const onVerifyMfa = async () => {
@@ -109,22 +153,30 @@ export function ConfigEditor(props: Props) {
             onChange={onPasswordChange}
           />
         </InlineField>
-        <InlineField
-          label="Token file"
-          labelWidth={14}
-          interactive
-          tooltip={
-            "Optional writable path where the Garmin OAuth token is cached (same format as garmin_exporter's --token-file). Avoids a fresh login (and MFA code) after every Grafana restart. Leave empty to keep tokens in memory only. When configuring multiple athletes, give each datasource its own file."
-          }
-        >
-          <Input
-            id="config-editor-token-file"
-            onChange={onTokenFileChange}
-            value={jsonData.tokenFile}
-            placeholder="/var/lib/grafana/garmin_token.json"
-            width={40}
-          />
-        </InlineField>
+        <Stack direction="row" alignItems="flex-start">
+          <InlineField
+            label="Session token"
+            labelWidth={14}
+            interactive
+            tooltip={
+              "Optional Garmin OAuth token (JSON, same format as garmin_exporter's token file). Lets logins resume the session instead of a fresh SSO login (and MFA code) after every Grafana restart. Click 'Load from session' after a successful Save & test, or paste a token for headless provisioning."
+            }
+          >
+            <SecretInput
+              id="config-editor-token"
+              isConfigured={secureJsonFields.token}
+              value={secureJsonData?.token}
+              placeholder='{"access_token":"…"}'
+              width={40}
+              onReset={onTokenReset}
+              onChange={onTokenChange}
+            />
+          </InlineField>
+          <Button onClick={onFetchToken} disabled={fetchingToken} variant="secondary">
+            {fetchingToken ? 'Loading…' : 'Load from session'}
+          </Button>
+        </Stack>
+        {tokenResult && <Alert severity={tokenResult.ok ? 'success' : 'error'} title={tokenResult.text} />}
         <Stack direction="row" alignItems="flex-start">
           <InlineField
             label="MFA code"

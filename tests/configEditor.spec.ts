@@ -5,7 +5,8 @@ test('should render all configuration fields', async ({ createDataSourceConfigPa
   await createDataSourceConfigPage({ type: ds.type });
   await expect(page.getByPlaceholder('athlete@example.com')).toBeVisible();
   await expect(page.getByPlaceholder('Enter your password')).toBeVisible();
-  await expect(page.getByPlaceholder('/var/lib/grafana/garmin_token.json')).toBeVisible();
+  await expect(page.getByPlaceholder('{"access_token":"…"}')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Load from session' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Verify' })).toBeVisible();
 });
 
