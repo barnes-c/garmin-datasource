@@ -229,7 +229,7 @@ jobs:
       - name: Docker logs
         if: ${{ always() && steps.run-tests.outcome == 'failure' }}
         run: |
-          docker logs barnesc-garminconnect-datasource >& grafana-server.log
+          docker logs barnescdev-garminconnect-datasource >& grafana-server.log
 
       - name: Stop grafana docker
         run: docker compose down

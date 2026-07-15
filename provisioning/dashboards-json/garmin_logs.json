@@ -12,7 +12,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum by (level) (count_over_time({job=\"grafana\"} |= \"plugin.barnesc-garminconnect-datasource\" | logfmt [$__auto]))",
+          "expr": "sum by (level) (count_over_time({job=\"grafana\"} |= \"plugin.barnescdev-garminconnect-datasource\" | logfmt [$__auto]))",
           "legendFormat": "{{level}}"
         }
       ],
@@ -41,7 +41,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "{job=\"grafana\"} |= \"plugin.barnesc-garminconnect-datasource\" | logfmt | level=~\"error|warn\""
+          "expr": "{job=\"grafana\"} |= \"plugin.barnescdev-garminconnect-datasource\" | logfmt | level=~\"error|warn\""
         }
       ],
       "options": {
@@ -61,7 +61,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "{job=\"grafana\"} |= \"plugin.barnesc-garminconnect-datasource\""
+          "expr": "{job=\"grafana\"} |= \"plugin.barnescdev-garminconnect-datasource\""
         }
       ],
       "options": {

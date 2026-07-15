@@ -29,7 +29,7 @@ Visualize your Garmin Connect activities, GPS tracks, and health metrics in Graf
 apiVersion: 1
 datasources:
   - name: Garmin Connect
-    type: barnesc-garminconnect-datasource
+    type: barnescdev-garminconnect-datasource
     access: proxy
     jsonData:
       email: $GARMIN_EMAIL
@@ -84,7 +84,7 @@ If you use token files, give each athlete's data source **its own file path** â€
 ## Notes & troubleshooting
 
 - Responses are cached in the plugin (5 minutes for recent data, 24 hours for historical), so dashboard refreshes and alert rules do not hammer Garmin's API.
-- Backend logs are prefixed `plugin.barnesc-garminconnect-datasource`; enable debug logging to see individual Garmin requests.
+- Backend logs are prefixed `plugin.barnescdev-garminconnect-datasource`; enable debug logging to see individual Garmin requests.
 - Some panels can be legitimately empty: splits require laps (auto-lap or manual), FTP requires a power meter, weight requires weigh-ins.
 - Metrics that need one Garmin request per day (sleep, stress, HRV, SpO2, â€¦) are clamped to the most recent 93 days on longer ranges, with a panel notice; other metrics fetch the full range in chunks.
 - This plugin uses Garmin Connect's unofficial web API via [go-garminconnect](https://github.com/barnes-c/go-garminconnect). It may break if Garmin changes their API. This project is not affiliated with, endorsed by, or connected to Garmin Ltd.

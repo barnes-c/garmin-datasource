@@ -46,7 +46,7 @@
         "y": 2
       },
       "datasource": {
-        "type": "barnesc-garminconnect-datasource",
+        "type": "barnescdev-garminconnect-datasource",
         "uid": "${athlete_a}"
       },
       "targets": [
@@ -77,7 +77,7 @@
         "y": 2
       },
       "datasource": {
-        "type": "barnesc-garminconnect-datasource",
+        "type": "barnescdev-garminconnect-datasource",
         "uid": "${athlete_a}"
       },
       "targets": [
@@ -108,7 +108,7 @@
         "y": 2
       },
       "datasource": {
-        "type": "barnesc-garminconnect-datasource",
+        "type": "barnescdev-garminconnect-datasource",
         "uid": "${athlete_a}"
       },
       "targets": [
@@ -139,7 +139,7 @@
         "y": 2
       },
       "datasource": {
-        "type": "barnesc-garminconnect-datasource",
+        "type": "barnescdev-garminconnect-datasource",
         "uid": "${athlete_a}"
       },
       "targets": [
@@ -170,7 +170,7 @@
         "y": 2
       },
       "datasource": {
-        "type": "barnesc-garminconnect-datasource",
+        "type": "barnescdev-garminconnect-datasource",
         "uid": "${athlete_b}"
       },
       "targets": [
@@ -201,7 +201,7 @@
         "y": 2
       },
       "datasource": {
-        "type": "barnesc-garminconnect-datasource",
+        "type": "barnescdev-garminconnect-datasource",
         "uid": "${athlete_b}"
       },
       "targets": [
@@ -232,7 +232,7 @@
         "y": 2
       },
       "datasource": {
-        "type": "barnesc-garminconnect-datasource",
+        "type": "barnescdev-garminconnect-datasource",
         "uid": "${athlete_b}"
       },
       "targets": [
@@ -263,7 +263,7 @@
         "y": 2
       },
       "datasource": {
-        "type": "barnesc-garminconnect-datasource",
+        "type": "barnescdev-garminconnect-datasource",
         "uid": "${athlete_b}"
       },
       "targets": [
@@ -294,7 +294,7 @@
         "y": 5
       },
       "datasource": {
-        "type": "barnesc-garminconnect-datasource",
+        "type": "barnescdev-garminconnect-datasource",
         "uid": "${athlete_a}"
       },
       "targets": [
@@ -366,7 +366,7 @@
         "y": 5
       },
       "datasource": {
-        "type": "barnesc-garminconnect-datasource",
+        "type": "barnescdev-garminconnect-datasource",
         "uid": "${athlete_b}"
       },
       "targets": [
@@ -445,7 +445,7 @@
         {
           "refId": "A",
           "datasource": {
-            "type": "barnesc-garminconnect-datasource",
+            "type": "barnescdev-garminconnect-datasource",
             "uid": "${athlete_a}"
           },
           "queryType": "activities"
@@ -453,7 +453,7 @@
         {
           "refId": "B",
           "datasource": {
-            "type": "barnesc-garminconnect-datasource",
+            "type": "barnescdev-garminconnect-datasource",
             "uid": "${athlete_b}"
           },
           "queryType": "activities"
@@ -522,7 +522,7 @@
         {
           "refId": "A",
           "datasource": {
-            "type": "barnesc-garminconnect-datasource",
+            "type": "barnescdev-garminconnect-datasource",
             "uid": "${athlete_a}"
           },
           "queryType": "metric",
@@ -531,7 +531,7 @@
         {
           "refId": "B",
           "datasource": {
-            "type": "barnesc-garminconnect-datasource",
+            "type": "barnescdev-garminconnect-datasource",
             "uid": "${athlete_b}"
           },
           "queryType": "metric",
@@ -589,7 +589,7 @@
         {
           "refId": "A",
           "datasource": {
-            "type": "barnesc-garminconnect-datasource",
+            "type": "barnescdev-garminconnect-datasource",
             "uid": "${athlete_a}"
           },
           "queryType": "metric",
@@ -598,7 +598,7 @@
         {
           "refId": "B",
           "datasource": {
-            "type": "barnesc-garminconnect-datasource",
+            "type": "barnescdev-garminconnect-datasource",
             "uid": "${athlete_b}"
           },
           "queryType": "metric",
@@ -656,7 +656,7 @@
         {
           "refId": "A",
           "datasource": {
-            "type": "barnesc-garminconnect-datasource",
+            "type": "barnescdev-garminconnect-datasource",
             "uid": "${athlete_a}"
           },
           "queryType": "metric",
@@ -665,7 +665,7 @@
         {
           "refId": "B",
           "datasource": {
-            "type": "barnesc-garminconnect-datasource",
+            "type": "barnescdev-garminconnect-datasource",
             "uid": "${athlete_b}"
           },
           "queryType": "metric",
@@ -716,7 +716,7 @@
         "y": 29
       },
       "datasource": {
-        "type": "barnesc-garminconnect-datasource",
+        "type": "barnescdev-garminconnect-datasource",
         "uid": "${athlete_a}"
       },
       "targets": [
@@ -790,7 +790,7 @@
         "y": 29
       },
       "datasource": {
-        "type": "barnesc-garminconnect-datasource",
+        "type": "barnescdev-garminconnect-datasource",
         "uid": "${athlete_b}"
       },
       "targets": [
@@ -864,7 +864,7 @@
         "y": 38
       },
       "datasource": {
-        "type": "barnesc-garminconnect-datasource",
+        "type": "barnescdev-garminconnect-datasource",
         "uid": "${athlete_a}"
       },
       "targets": [
@@ -942,7 +942,7 @@
         "y": 38
       },
       "datasource": {
-        "type": "barnesc-garminconnect-datasource",
+        "type": "barnescdev-garminconnect-datasource",
         "uid": "${athlete_b}"
       },
       "targets": [
@@ -1022,7 +1022,7 @@
         "name": "athlete_a",
         "label": "Athlete A",
         "type": "datasource",
-        "query": "barnesc-garminconnect-datasource",
+        "query": "barnescdev-garminconnect-datasource",
         "current": {},
         "options": [],
         "hide": 0,
@@ -1034,7 +1034,7 @@
         "name": "athlete_b",
         "label": "Athlete B",
         "type": "datasource",
-        "query": "barnesc-garminconnect-datasource",
+        "query": "barnescdev-garminconnect-datasource",
         "current": {},
         "options": [],
         "hide": 0,

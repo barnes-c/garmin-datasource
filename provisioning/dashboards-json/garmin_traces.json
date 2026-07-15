@@ -33,7 +33,7 @@
         {
           "refId": "A",
           "queryType": "traceql",
-          "query": "{resource.service.name=\"barnesc-garminconnect-datasource\"}",
+          "query": "{resource.service.name=\"barnescdev-garminconnect-datasource\"}",
           "tableType": "traces",
           "limit": 50
         }

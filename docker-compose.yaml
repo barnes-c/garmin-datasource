@@ -6,6 +6,8 @@ services:
     environment:
       GARMIN_EMAIL: ${GARMIN_EMAIL:-}
       GARMIN_PASSWORD: ${GARMIN_PASSWORD:-}
+      # Overrides the stale plugin id in .config/docker-compose-base.yaml (generated, not edited).
+      GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS: barnescdev-garminconnect-datasource
       GF_TRACING_OPENTELEMETRY_OTLP_ADDRESS: tempo:4317
       GF_TRACING_OPENTELEMETRY_OTLP_PROPAGATION: w3c
       GF_LOG_MODE: console file

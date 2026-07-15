@@ -16,7 +16,7 @@
         "y": 0
       },
       "datasource": {
-        "type": "barnesc-garminconnect-datasource",
+        "type": "barnescdev-garminconnect-datasource",
         "uid": "${datasource}"
       },
       "targets": [
@@ -48,7 +48,7 @@
         "y": 0
       },
       "datasource": {
-        "type": "barnesc-garminconnect-datasource",
+        "type": "barnescdev-garminconnect-datasource",
         "uid": "${datasource}"
       },
       "targets": [
@@ -80,7 +80,7 @@
         "y": 0
       },
       "datasource": {
-        "type": "barnesc-garminconnect-datasource",
+        "type": "barnescdev-garminconnect-datasource",
         "uid": "${datasource}"
       },
       "targets": [
@@ -112,7 +112,7 @@
         "y": 0
       },
       "datasource": {
-        "type": "barnesc-garminconnect-datasource",
+        "type": "barnescdev-garminconnect-datasource",
         "uid": "${datasource}"
       },
       "targets": [
@@ -144,7 +144,7 @@
         "y": 0
       },
       "datasource": {
-        "type": "barnesc-garminconnect-datasource",
+        "type": "barnescdev-garminconnect-datasource",
         "uid": "${datasource}"
       },
       "targets": [
@@ -176,7 +176,7 @@
         "y": 4
       },
       "datasource": {
-        "type": "barnesc-garminconnect-datasource",
+        "type": "barnescdev-garminconnect-datasource",
         "uid": "${datasource}"
       },
       "targets": [
@@ -265,7 +265,7 @@
         "y": 4
       },
       "datasource": {
-        "type": "barnesc-garminconnect-datasource",
+        "type": "barnescdev-garminconnect-datasource",
         "uid": "${datasource}"
       },
       "targets": [
@@ -333,7 +333,7 @@
         "y": 11
       },
       "datasource": {
-        "type": "barnesc-garminconnect-datasource",
+        "type": "barnescdev-garminconnect-datasource",
         "uid": "${datasource}"
       },
       "targets": [
@@ -438,7 +438,7 @@
         "y": 18
       },
       "datasource": {
-        "type": "barnesc-garminconnect-datasource",
+        "type": "barnescdev-garminconnect-datasource",
         "uid": "${datasource}"
       },
       "targets": [
@@ -482,7 +482,7 @@
         "y": 18
       },
       "datasource": {
-        "type": "barnesc-garminconnect-datasource",
+        "type": "barnescdev-garminconnect-datasource",
         "uid": "${datasource}"
       },
       "targets": [
@@ -571,7 +571,7 @@
         "y": 18
       },
       "datasource": {
-        "type": "barnesc-garminconnect-datasource",
+        "type": "barnescdev-garminconnect-datasource",
         "uid": "${datasource}"
       },
       "targets": [
@@ -610,7 +610,7 @@
         "y": 27
       },
       "datasource": {
-        "type": "barnesc-garminconnect-datasource",
+        "type": "barnescdev-garminconnect-datasource",
         "uid": "${datasource}"
       },
       "targets": [
@@ -641,7 +641,7 @@
         "name": "datasource",
         "label": "Datasource",
         "type": "datasource",
-        "query": "barnesc-garminconnect-datasource",
+        "query": "barnescdev-garminconnect-datasource",
         "current": {},
         "options": [],
         "hide": 0,
@@ -652,7 +652,7 @@
       {
         "current": {},
         "datasource": {
-          "type": "barnesc-garminconnect-datasource",
+          "type": "barnescdev-garminconnect-datasource",
           "uid": "${datasource}"
         },
         "definition": "activities",
