@@ -579,13 +579,19 @@ func fetchLactateThreshold(ctx context.Context, d *Datasource, client *garmincon
 	// API order is not guaranteed; lastNotNull reductions need ascending time.
 	sort.Slice(entries, func(i, j int) bool { return entries[i].CalendarDate < entries[j].CalendarDate })
 	for _, e := range entries {
+		// calendarDate arrives as a plain date or a datetime, depending on
+		// the measurement source.
 		t, ok := day(e.CalendarDate)
+		if !ok {
+			t, ok = gmtTime(e.CalendarDate)
+		}
 		if !ok {
 			t = to
 		}
 		times = append(times, t)
 		if e.Speed != nil {
-			converted := d.speedFromMS(*e.Speed)
+			// Garmin reports threshold speed in tens of m/s (0.35 → 3.5 m/s).
+			converted := d.speedFromMS(*e.Speed * 10)
 			speed = append(speed, &converted)
 		} else {
 			speed = append(speed, nil)

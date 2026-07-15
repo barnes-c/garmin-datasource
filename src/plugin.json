@@ -12,22 +12,57 @@
     "author": {
       "name": "Christopher Barnes"
     },
-    "keywords": ["datasource", "garmin", "gps", "sports", "geomap"],
+    "keywords": [
+      "datasource",
+      "garmin",
+      "connect",
+      "gps",
+      "sports",
+      "geomap"
+    ],
     "logos": {
       "small": "img/logo.png",
       "large": "img/logo.png"
     },
     "links": [
-      { "name": "GitHub", "url": "https://github.com/barnes-c/garmin-datasource" },
-      { "name": "License", "url": "https://github.com/barnes-c/garmin-datasource/blob/main/LICENSE" },
-      { "name": "Sponsor", "url": "https://github.com/sponsors/barnes-c" }
+      {
+        "name": "GitHub",
+        "url": "https://github.com/barnes-c/garmin-datasource"
+      },
+      {
+        "name": "License",
+        "url": "https://github.com/barnes-c/garmin-datasource/blob/main/LICENSE"
+      },
+      {
+        "name": "Sponsor",
+        "url": "https://github.com/sponsors/barnes-c"
+      }
     ],
     "screenshots": [
-      { "name": "Activity dashboard", "path": "img/screenshots/activity.png" },
-      { "name": "Athlete overview", "path": "img/screenshots/athlete-overview.png" },
-      { "name": "Health dashboard", "path": "img/screenshots/health.png" },
-      { "name": "Fitness dashboard", "path": "img/screenshots/fitness.png" },
-      { "name": "Athlete comparison", "path": "img/screenshots/comparison.png" }
+      {
+        "name": "Activity dashboard",
+        "path": "img/screenshots/activity.png"
+      },
+      {
+        "name": "Cycling dashboard",
+        "path": "img/screenshots/cycling.png"
+      },
+      {
+        "name": "Athlete overview",
+        "path": "img/screenshots/athlete-overview.png"
+      },
+      {
+        "name": "Health dashboard",
+        "path": "img/screenshots/health.png"
+      },
+      {
+        "name": "Fitness dashboard",
+        "path": "img/screenshots/fitness.png"
+      },
+      {
+        "name": "Athlete comparison",
+        "path": "img/screenshots/comparison.png"
+      }
     ],
     "updated": "%TODAY%",
     "version": "%VERSION%"
