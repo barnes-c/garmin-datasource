@@ -22,8 +22,6 @@ on:
       - 'provisioning/**'
       - 'docker-compose.yaml'
       - '.github/workflows/ci.yml'
-  # No paths filter: "Build, lint and unit tests" is a required status
-  # check, so it must run and report on every PR or the PR hangs forever.
   pull_request:
     branches:
       - main
